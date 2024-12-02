@@ -1,7 +1,6 @@
 package com.example.pokemonproject
 
-import PokemonScreen
-import android.app.Application
+import com.example.pokemonproject.screen.PokemonList.PokemonScreen
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +13,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.pokemonproject.screen.PokemonList.PokemonViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dagger.hilt.android.HiltAndroidApp
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -25,7 +23,7 @@ class MainActivity : ComponentActivity() {
             MyApplicationTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     PokemonScreen(
-                        innerPadding = innerPadding, viewModel = hiltViewModel<PokemonViewModel>()
+                        innerPadding = innerPadding, viewModel = hiltViewModel<PokemonViewModel>(), context = this@MainActivity
                     )
                 }
             }

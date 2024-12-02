@@ -1,4 +1,7 @@
+package com.example.pokemonproject.screen.PokemonList
+
 import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -15,69 +18,127 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.example.pokemonproject.data.network.DTO.PokemonDTO
-import com.example.pokemonproject.screen.PokemonList.PokemonViewModel
+import com.example.pokemonproject.domain.model.PokemonState
+import com.example.pokemonproject.domain.model.PokemonStatus
+import com.example.pokemonproject.utils.isInternetAvailable
 
 
 @Composable
 fun PokemonScreen(
     viewModel: PokemonViewModel ,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    context: Context
 ) {
-    val pokemonList by viewModel.pokemonData.observeAsState(initial = emptyList())
-    if (pokemonList.isEmpty()) {
-        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
-        }
-    } else {
-        LazyColumn(
-            contentPadding = PaddingValues(
-                top = innerPadding.calculateTopPadding() + 10.dp,
-                start = 20.dp,
-                end = 20.dp,
-                bottom = innerPadding.calculateBottomPadding() + 10.dp
-            ),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+    val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
+    var searchQuery by remember { mutableStateOf("") }
+    Column {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            item {
-                Text(
-                    text = "Pokedex",
-                    style = MaterialTheme.typography.displaySmall,
-                    fontWeight = FontWeight.Bold
+            TextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Search") },
+                singleLine = true, // Make it a single-line TextField-
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Search // Set IME action to "Search"
+                ),
+                keyboardActions = KeyboardActions(
+                    onSearch = {
+                        viewModel.searchPokemon(searchQuery)
+                    }
                 )
-            }
-            items(pokemonList) { p ->
-                Card(
-                    pokemon = p,
-
-                    )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Button(onClick = {
+                viewModel.searchPokemon(searchQuery)
+            }) {
+                Text("Search")
             }
         }
+        when(pokemonState.status){
+            PokemonStatus.LOADING -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            }
+            PokemonStatus.ERROR -> {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text("Error")
+                }
+            }
+            PokemonStatus.SUCCESS -> {
+                val pokemonList = pokemonState.pokemon
+                LazyColumn(
+                    contentPadding = PaddingValues(
+                        top = innerPadding.calculateTopPadding() + 10.dp,
+                        start = 20.dp,
+                        end = 20.dp,
+                        bottom = innerPadding.calculateBottomPadding() + 10.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Pokedex",
+                            style = MaterialTheme.typography.displaySmall,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                    items(pokemonList) { p ->
+                        Card(
+                            pokemon = p,context= context
+                        )
+                    }
+                }
+
+            }
+            PokemonStatus.INIT -> TODO()
+
+        }
+
+    }
+
 
 
     }
 
 
-}
+
 
 
 @SuppressLint("InvalidColorHexValue")
 @Composable
-fun Card(pokemon: PokemonDTO) {
+fun Card(pokemon: PokemonDTO,context: Context) {
+    val isConnected = remember { isInternetAvailable(context) }
+
     Box(
         modifier = Modifier
 
@@ -98,16 +159,21 @@ fun Card(pokemon: PokemonDTO) {
                     )
                     .padding(10.dp) // Adjusted padding for image fitting
             ) {
-                //if(connection==null){
-                // }
-                AsyncImage(
-                    model = pokemon.sprites,
-                    contentDescription = pokemon.name,
-                    modifier = Modifier
-                        .height(40.dp).width(40.dp) // Adjusted size for image fitting
-                        .clip(RoundedCornerShape(4.dp)), // Clip image for rounded corners
-                    contentScale = ContentScale.Crop
-                )
+                if(!isConnected){
+                    Text(text ="No image")
+                }else{
+                    AsyncImage(
+                        model = pokemon.sprites,
+                        contentDescription = pokemon.name,
+                        modifier = Modifier
+                            .height(40.dp)
+                            .width(40.dp) // Adjusted size for image fitting
+                            .clip(RoundedCornerShape(4.dp)), // Clip image for rounded corners
+                        contentScale = ContentScale.Crop
+                    )
+
+
+                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -138,7 +204,10 @@ fun Card(pokemon: PokemonDTO) {
                                     color = elementColor(type),
                                     shape = RoundedCornerShape(5.dp) // Adjust corner radius as needed
                                 )
-                                .padding(horizontal = 6.dp, vertical = 2.dp) // Adjust padding for type label
+                                .padding(
+                                    horizontal = 6.dp,
+                                    vertical = 2.dp
+                                ) // Adjust padding for type label
                                 .clip(RoundedCornerShape(4.dp))
                         )
                         Spacer(modifier = Modifier.width(4.dp))

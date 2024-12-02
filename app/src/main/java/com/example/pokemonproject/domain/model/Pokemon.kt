@@ -1,5 +1,7 @@
 package com.example.pokemonproject.domain.model
 
+import com.example.pokemonproject.data.network.DTO.PokemonDTO
+
 data class Pokemon(
     val id: Int,
     val name: String,
@@ -23,3 +25,14 @@ fun Pokemon.getTypeNames(): List<String> {
 }
 
 // Sample usage of the model
+enum class PokemonStatus {
+    LOADING,
+    SUCCESS,
+    ERROR,
+    INIT
+}
+
+data class PokemonState(
+    var pokemon: List<PokemonDTO> =emptyList(),//data
+    var status: PokemonStatus = PokemonStatus.INIT,
+)

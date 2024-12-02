@@ -8,8 +8,8 @@ import retrofit2.Response
 import javax.inject.Inject
 
 class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonApi ) : PokemonRepository {
-    override suspend fun fetchPokemonData(pokemonName: String): PokemonDTO {
-        val response: Response<Pokemon> = pokemonApi.getPokemon(pokemonName)
+    override suspend fun fetchPokemonData(pokemonID: Int): PokemonDTO {
+        val response: Response<Pokemon> = pokemonApi.getPokemon(pokemonID)
         if (response.isSuccessful) {
             val pokemon = response.body()!!
             return PokemonDTO(
@@ -28,11 +28,9 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
         val response = pokemonApi.getPokemonList()
         val pokemonList = mutableListOf<PokemonDTO>()
         if (response.isSuccessful) {
-            // Get the list of Pokémon names from the response
-            val pokemonNames = response.body()?.results ?: emptyList()
-            // For each Pokémon name, fetch its full data
-            for (pokemonName in pokemonNames) {
-                val pokemon = fetchPokemonData(pokemonName.name) // Fetch full Pokémon data
+
+            for (pokemonID in 1..151) {
+                val pokemon = fetchPokemonData(pokemonID) // Fetch full Pokémon data
                 pokemonList.add(
                     pokemon
                 ) // Add the DTO object to the list
