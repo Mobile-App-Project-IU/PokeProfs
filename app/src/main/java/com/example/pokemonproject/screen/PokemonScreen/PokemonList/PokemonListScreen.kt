@@ -1,7 +1,7 @@
-package com.example.pokemonproject.screen.PokemonList
 
 import android.annotation.SuppressLint
 import android.content.Context
+import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -21,7 +21,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -39,18 +41,22 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.pokemonproject.data.network.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
+import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
 import com.example.pokemonproject.utils.isInternetAvailable
 
 
 @Composable
-fun PokemonScreen(
-    viewModel: PokemonViewModel ,
+fun PokemonListScreen(
+    viewModel: PokemonListViewModel = hiltViewModel(),
     innerPadding: PaddingValues,
-    context: Context
+    context: Context,
+    animatedVisibilityScope: AnimatedContentScope,
+    onPokemonClick: (Int) -> Unit,
 ) {
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
@@ -95,7 +101,7 @@ fun PokemonScreen(
                 }
             }
             PokemonStatus.SUCCESS -> {
-                val pokemonList = pokemonState.pokemon
+                val pokemonList = pokemonState.pokemonList
                 LazyColumn(
                     contentPadding = PaddingValues(
                         top = innerPadding.calculateTopPadding() + 10.dp,
@@ -111,10 +117,11 @@ fun PokemonScreen(
                             style = MaterialTheme.typography.displaySmall,
                             fontWeight = FontWeight.Bold
                         )
+
                     }
                     items(pokemonList) { p ->
-                        Card(
-                            pokemon = p,context= context
+                        PokemonCard(
+                            pokemon = p,context= context,onPokemonClick = {onPokemonClick(p.id)}
                         )
                     }
                 }
@@ -134,16 +141,19 @@ fun PokemonScreen(
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("InvalidColorHexValue")
 @Composable
-fun Card(pokemon: PokemonDTO,context: Context) {
+fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit) {
     val isConnected = remember { isInternetAvailable(context) }
 
-    Box(
+    Card(
         modifier = Modifier
 
             .fillMaxWidth()
-            .background(Color(0xFFE0E0E0))
+            .background(Color(0xFFE0E0E0)),
+        onClick = onPokemonClick
+
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -168,7 +178,7 @@ fun Card(pokemon: PokemonDTO,context: Context) {
                         modifier = Modifier
                             .height(40.dp)
                             .width(40.dp) // Adjusted size for image fitting
-                            .clip(RoundedCornerShape(4.dp)), // Clip image for rounded corners
+                            .clip(RoundedCornerShape(4.dp)),
                         contentScale = ContentScale.Crop
                     )
 

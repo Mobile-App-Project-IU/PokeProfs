@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.hilt.android) apply false
     id("kotlin-kapt")
     id("dagger.hilt.android.plugin")
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.compose.compiler)
 
 //    id("com.google.dagger.hilt.android")
 }
@@ -49,7 +51,7 @@ android {
         compose = true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
+        kotlinCompilerExtensionVersion = "1.5.14"
     }
     packaging {
         resources {
@@ -59,6 +61,7 @@ android {
 }
 
 dependencies {
+
     val room = "2.6.0"
     // Room
     implementation("androidx.room:room-runtime:$room")
@@ -89,6 +92,13 @@ dependencies {
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
     implementation("com.google.dagger:hilt-android:2.48")
     kapt("com.google.dagger:hilt-compiler:2.48")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation("androidx.compose.animation:animation:1.7.5")
+
+
+
 
 
 

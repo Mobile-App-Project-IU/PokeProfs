@@ -1,4 +1,4 @@
-package com.example.pokemonproject.screen.PokemonList
+package com.example.pokemonproject.screen.PokemonScreen.PokemonList
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,7 +6,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.pokemonproject.data.network.DTO.PokemonDTO
 import com.example.pokemonproject.domain.repository.PokemonRepository
-import com.example.pokemonproject.data.repository.PokemonRepositoryImpl
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,7 +13,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonViewModel @Inject constructor (private val repository: PokemonRepository ) : ViewModel() {
+class PokemonListViewModel @Inject constructor (private val repository: PokemonRepository ) : ViewModel() {
 
 
     private val _pokemonState = MutableLiveData(PokemonState())
@@ -33,7 +32,7 @@ class PokemonViewModel @Inject constructor (private val repository: PokemonRepos
             try {
                 originalLList = repository.fetchPokemonList()
                 _pokemonState.value = _pokemonState.value?.copy(
-                    status = PokemonStatus.SUCCESS, pokemon = originalLList
+                    status = PokemonStatus.SUCCESS, pokemonList = originalLList
                 )
             } catch (e: Exception) {
                 _pokemonState.value = _pokemonState.value?.copy(
@@ -52,7 +51,7 @@ class PokemonViewModel @Inject constructor (private val repository: PokemonRepos
             originalLList.filter { it.name.equals(query, ignoreCase = true) }
         }
         _pokemonState.value = _pokemonState.value?.copy(
-            status = PokemonStatus.SUCCESS, pokemon = filteredList
+            status = PokemonStatus.SUCCESS, pokemonList = filteredList
         )
     }
 }
