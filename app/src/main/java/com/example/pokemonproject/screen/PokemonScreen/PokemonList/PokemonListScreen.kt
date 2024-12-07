@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,8 +49,13 @@ import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
 import com.example.pokemonproject.utils.isInternetAvailable
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
     viewModel: PokemonListViewModel = hiltViewModel(),
@@ -61,6 +67,21 @@ fun PokemonListScreen(
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
     Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Pokemons",
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -146,12 +167,18 @@ fun PokemonListScreen(
 @Composable
 fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit) {
     val isConnected = remember { isInternetAvailable(context) }
-
+    val cardBackgroundColor = if (pokemon.types.isNotEmpty()) {
+        elementColor(pokemon.types.first()).copy(alpha = 0.5f) // 50% opacity
+    } else {
+        Color(0xFFE0E0E0)
+    }
     Card(
         modifier = Modifier
 
-            .fillMaxWidth()
-            .background(Color(0xFFE0E0E0)),
+            .fillMaxWidth(),
+        colors = androidx.compose.material3.CardDefaults.cardColors( // Use CardDefaults to set the background color
+            containerColor = cardBackgroundColor
+        ),
         onClick = onPokemonClick
 
     ) {
@@ -192,7 +219,12 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = pokemon.name)
+                Text(
+                    text = pokemon.name,
+                    maxLines = 1, // Restrict to one line
+                    overflow = TextOverflow.Ellipsis, // Show "..." if the text overflows
+                    modifier = Modifier.fillMaxWidth() // Ensure the text expands to available width
+                )
                 Text(
                     text = "#${pokemon.id}",
                     color = Color.Gray
@@ -241,7 +273,7 @@ fun elementColor(type: String): Color {
         "flying" -> Color(0xFF90CAF9) // Soft light blue
         "psychic" -> Color(0xFFF06292) // Light pink
         "bug" -> Color(0xFF8BC34A) // Light green
-        "rock" -> Color(0xFF795548) // Brown
+        "rock" -> Color(0xFFEDDBB6) // Brown
         "ghost" -> Color(0xFF673AB7) // Dark purple
         "dragon" -> Color(0xFF1976D2) // Strong blue
         "dark" -> Color(0xFF212121) // Deep gray/black

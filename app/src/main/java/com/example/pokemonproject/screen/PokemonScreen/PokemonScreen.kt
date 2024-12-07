@@ -37,7 +37,7 @@ fun PokemonScreen(
                 val args = it.toRoute<PokemonDetailRout>()
                 PokemonDetailScreen(
                     animatedVisibilityScope = this,
-                    id = args.id
+                    id = args.id,
                 )
             }
         }
