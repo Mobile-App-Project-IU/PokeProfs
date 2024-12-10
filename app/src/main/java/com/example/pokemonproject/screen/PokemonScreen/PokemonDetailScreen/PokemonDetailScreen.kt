@@ -94,7 +94,7 @@ fun PokemonDetailScreen(
 
                         )
                         Text(
-                            text = pokemon.hp,
+                            text = pokemon.description ?:" null",
                             style = TextStyle(
                                 color = Color.Black,
                                 fontSize = 20.sp

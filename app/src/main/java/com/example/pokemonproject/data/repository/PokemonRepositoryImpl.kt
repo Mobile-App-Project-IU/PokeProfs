@@ -3,6 +3,7 @@ package com.example.pokemonproject.data.repository
 import com.example.pokemonproject.data.network.DTO.PokemonDTO
 import com.example.pokemonproject.data.network.PokemonApi
 import com.example.pokemonproject.domain.model.Pokemon
+import com.example.pokemonproject.domain.model.ResponseModel
 import com.example.pokemonproject.domain.repository.PokemonRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -14,8 +15,14 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
     PokemonRepository {
     override suspend fun fetchPokemonData(pokemonID: Int, param: (PokemonDTO) -> Unit): PokemonDTO {
         val response: Response<Pokemon> = pokemonApi.getPokemon(pokemonID)
+        val characteristicResponse:Response<ResponseModel> = pokemonApi.getCharacteristic(1)
+        val characteristic= characteristicResponse.body()?:ResponseModel(listOf())
         if (response.isSuccessful) {
             val pokemon = response.body() ?: throw Exception("Empty response body")
+            var des:String=" ";
+            if(pokemonID in 1..30){
+                des=fetchCharacteristic(pokemonID);
+            }
             val pokemonDTO = PokemonDTO(
                 id = pokemon.id,
                 name = pokemon.name,
@@ -29,9 +36,8 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
                 defense = pokemon.stats[2].baseStat.toString(),
                 special_attack = pokemon.stats[3].baseStat.toString(),
                 special_defense = pokemon.stats[4].baseStat.toString(),
-                speed = pokemon.stats[5].baseStat.toString()
-
-
+                speed = pokemon.stats[5].baseStat.toString(),
+                description = des
             )
             param(pokemonDTO)
             return pokemonDTO
@@ -43,11 +49,15 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
     override suspend fun fetchPokemonList(): List<PokemonDTO> = coroutineScope {
         val pokemonList = (1..151).map { pokemonID ->
             async {
-                fetchPokemonData(pokemonID) { pokemonDTO ->
-                    println(pokemonDTO.types) // Log the types
+                fetchPokemonData(pokemonID) { _ ->
                 }
             }
         }.awaitAll()
         pokemonList
+    }
+    override   suspend fun   fetchCharacteristic(id:Int):String{
+         val characteristicResponse:Response<ResponseModel> = pokemonApi.getCharacteristic(id)
+         val characteristic= characteristicResponse.body()?:ResponseModel(listOf())
+         return characteristic.descriptions[7].description;
     }
 }

@@ -1,4 +1,14 @@
 package com.example.pokemonproject.domain.model
 
-data class Characteristic(val descriptions:List<Descriptions>);
-data class Descriptions(val description:String)
+import org.intellij.lang.annotations.Language
+
+
+data class ResponseModel(
+    val descriptions: List<Description>,
+)
+data class Description(
+    val description: String
+)
+
+
+
