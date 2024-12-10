@@ -38,6 +38,7 @@ fun PokemonDetailScreen(
     }
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     val pokemon  = pokemonState.pokemon;
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
