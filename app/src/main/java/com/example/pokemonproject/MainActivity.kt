@@ -22,30 +22,30 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-//        setContent {
-//            MyApplicationTheme {
-//                PokemonScreen(
-//                    context = this@MainActivity
-//                )
-//            }
-//        }
-        val db=Room.databaseBuilder(
-            this@MainActivity,
-            AppDatabase::class.java,
-            "test_database"
-        ).build()
-        val pokemonDao = db.pokemonDao()
-        lifecycleScope.launch {
-            pokemonDao.insert(PokemonEntity(0, "Lemanh@1412"));
-            val pokemon = pokemonDao.getAll().collect { pokemonList ->
-                // Access the List<PokemonEntity> here
-                pokemonList.forEach { pokemon ->
-                    println("Test Database: ${pokemon.name}")
-                }
-
+        setContent {
+            MyApplicationTheme {
+                PokemonScreen(
+                    context = this@MainActivity
+                )
+            }
         }
-
-    }
+//        val db=Room.databaseBuilder(
+//            this@MainActivity,
+//            AppDatabase::class.java,
+//            "test_database"
+//        ).build()
+//        val pokemonDao = db.pokemonDao()
+//        lifecycleScope.launch {
+//            pokemonDao.insert(PokemonEntity(0, "Lemanh@1412"));
+//            val pokemon = pokemonDao.getAll().collect { pokemonList ->
+//                // Access the List<PokemonEntity> here
+//                pokemonList.forEach { pokemon ->
+//                    println("Test Database: ${pokemon.name}")
+//                }
+//
+//        }
+//
+//    }
 }
 }
 
