@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -126,7 +127,6 @@ fun PokemonListScreen(
                 val pokemonList = pokemonState.pokemonList
                 LazyColumn(
                     contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 10.dp,
                         start = 20.dp,
                         end = 20.dp,
                         bottom = innerPadding.calculateBottomPadding() + 10.dp
@@ -192,9 +192,10 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
                 modifier = Modifier
                     .border(
                         width = 2.dp,
-                        color = Color(173, 216, 230), // Light blue color
+                        color = Color(173, 216, 230),
                         shape = RoundedCornerShape(4.dp)
                     )
+                    .size(100.dp)
                     .padding(10.dp) // Adjusted padding for image fitting
             ) {
                 if(!isConnected){
@@ -204,8 +205,8 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
                         model = pokemon.sprites,
                         contentDescription = pokemon.name,
                         modifier = Modifier
-                            .height(40.dp)
-                            .width(40.dp) // Adjusted size for image fitting
+                            .height(100.dp)
+                            .width(100.dp) // Adjusted size for image fitting
                             .clip(RoundedCornerShape(4.dp)),
                         contentScale = ContentScale.Crop
                     )
