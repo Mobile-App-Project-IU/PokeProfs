@@ -51,7 +51,7 @@ fun PokemonDetailScreen(
                     Brush.verticalGradient(
                         listOf(
                             Color.Black, // Starting color
-                            pokemon?.types?.firstOrNull()?.let {
+                            pokemon.types.firstOrNull()?.let {
                                 elementColor(it).copy(alpha = 0.7f)
                             } ?: Color.Gray.copy(alpha = 0.5f) // Fallback color if the first type is null
                         )

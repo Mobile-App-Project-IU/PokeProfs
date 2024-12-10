@@ -78,7 +78,7 @@ fun PokemonScreen(context: Context,) {
         )
     }) { innerPadding ->
         SharedTransitionLayout {
-            NavHost(navController = navController, startDestination = PokemonListRoute) {
+            NavHost(navController = navController, startDestination = PokemonDetailRout) {
                 composable<PokemonListRoute> {
                     PokemonListScreen(
                         animatedVisibilityScope = this,
@@ -95,7 +95,7 @@ fun PokemonScreen(context: Context,) {
                     val args = it.toRoute<PokemonDetailRout>()
                     PokemonDetailScreen(
                         animatedVisibilityScope = this,
-                        id = args.id,
+                        id = 1,
                     )
                 }
             }

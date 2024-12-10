@@ -1,5 +1,6 @@
 package com.example.pokemonproject.data.network
 
+import com.example.pokemonproject.domain.model.Characteristic
 import com.example.pokemonproject.domain.model.Pokemon
 import com.example.pokemonproject.domain.model.PokemonList
 import retrofit2.Response
@@ -12,5 +13,6 @@ interface PokemonApi {
 
     @GET("pokemon?offset=20&limit=20")
     suspend fun getPokemonList(): Response<PokemonList>
-
+    @GET("characteristic/{id}")
+    suspend fun getCharacteristic(): Response<Characteristic>
 }

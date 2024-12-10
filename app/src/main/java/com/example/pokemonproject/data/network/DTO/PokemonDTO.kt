@@ -16,4 +16,5 @@ data class  PokemonDTO(
     val special_attack:String="",
     val special_defense:String="",
     val speed:String="",
+    var description:String=""
 )
