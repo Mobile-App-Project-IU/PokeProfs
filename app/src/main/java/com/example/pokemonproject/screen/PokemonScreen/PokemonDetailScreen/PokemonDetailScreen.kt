@@ -60,7 +60,7 @@ fun PokemonDetailScreen(
                     Brush.verticalGradient(
                         listOf(
                             Color.Black, // Starting color
-                            pokemon?.types?.firstOrNull()?.let {
+                            pokemon.types.firstOrNull()?.let {
                                 elementColor(it).copy(alpha = 0.7f)
                             } ?: Color.Gray.copy(alpha = 0.5f) // Fallback color if the first type is null
                         )
@@ -90,6 +90,27 @@ fun PokemonDetailScreen(
                             .padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
+                        // Display the name above the image
+                        Text(
+                            text = pokemon.name,
+                            style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+
+                        )
+                        Text(
+                            text = pokemon.description ?:" null",
+                            style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+
+                        )
+
+                        // Display the image using Coil's AsyncImage
                         AsyncImage(
                             model = pokemon.sprites,
                             contentDescription = "Pokemon Image",
