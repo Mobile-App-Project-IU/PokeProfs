@@ -18,6 +18,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.NavHost
@@ -61,14 +65,14 @@ fun PokemonAppBar(
 @Composable
 fun PokemonScreen(context: Context,) {
     val navController = rememberNavController()
-    var screen:pokemonScreen = pokemonScreen.PokeMonList
-    var canNavigateBack = false
+    var screen by remember { mutableStateOf(pokemonScreen.PokeMonList) }
+    var navigate by remember { mutableStateOf(false) }
     Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
         PokemonAppBar(
             pokemonScreen = screen,
-            canNavigateBack = true,
+            canNavigateBack = navigate,
             navigateUp = { navController.popBackStack();
-            canNavigateBack = true;
+                navigate = false;
                 screen=pokemonScreen.PokeMonList
             }
         )
@@ -81,7 +85,7 @@ fun PokemonScreen(context: Context,) {
                         onPokemonClick = { id ->
                             navController.navigate(PokemonDetailRout(id))
                             screen = pokemonScreen.PokeMonDetail
-                            canNavigateBack = true
+                            navigate = true
                         },
                         innerPadding = innerPadding,
                         context = context
