@@ -1,11 +1,17 @@
 package com.example.pokemonproject.data.di
 
+import android.content.Context
+import androidx.room.Room
+import com.example.pokemonproject.data.Room.AppDatabase
+import com.example.pokemonproject.data.Room.DAO.ExampleDao
+import com.example.pokemonproject.data.Room.DAO.PokemonDao
 import com.example.pokemonproject.data.network.PokemonApi
 import com.example.pokemonproject.data.repository.PokemonRepositoryImpl
 import com.example.pokemonproject.domain.repository.PokemonRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -14,7 +20,19 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
+    @Provides
+    @Singleton
+    fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
+        return Room.databaseBuilder(
+            context,
+            AppDatabase::class.java,
+            "example_database"
+        ).build()
+    }
+    @Provides
+    fun provideExampleDao(database: AppDatabase): PokemonDao {
+        return database.pokemonDao()
+    }
     private const val BASE_URL = "https://pokeapi.co/api/v2/"
     @Provides
     @Singleton

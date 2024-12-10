@@ -8,7 +8,7 @@ import com.example.pokemonproject.data.Room.Entity.PokemonEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface ExampleDao {
+interface PokemonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(example: PokemonEntity)
 
