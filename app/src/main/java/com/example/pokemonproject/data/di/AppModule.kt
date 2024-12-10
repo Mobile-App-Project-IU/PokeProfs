@@ -3,7 +3,6 @@ package com.example.pokemonproject.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pokemonproject.data.Room.AppDatabase
-import com.example.pokemonproject.data.Room.DAO.ExampleDao
 import com.example.pokemonproject.data.Room.DAO.PokemonDao
 import com.example.pokemonproject.data.network.PokemonApi
 import com.example.pokemonproject.data.repository.PokemonRepositoryImpl
