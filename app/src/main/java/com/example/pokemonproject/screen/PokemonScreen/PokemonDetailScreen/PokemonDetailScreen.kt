@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.myapplication.ui.theme.elementColor
+import com.example.pokemonproject.data.network.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonDetailScreen.PokemonScreenViewModel
@@ -37,7 +38,7 @@ fun PokemonDetailScreen(
         viewModel.fetchPokemon(id)
     }
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
-    val pokemon  = pokemonState.pokemon;
+    val pokemon  = pokemonState.pokemon ?: PokemonDTO(types = listOf());
 
     Column(
         verticalArrangement = Arrangement.Center,
@@ -63,9 +64,7 @@ fun PokemonDetailScreen(
                 PokemonStatus.LOADING -> {
                     CircularProgressIndicator()
                 }
-
                 PokemonStatus.ERROR -> {
-
                     Text(
                         text = "No internet Connection",
                         style = TextStyle(
@@ -73,10 +72,7 @@ fun PokemonDetailScreen(
                             fontSize = 20.sp
                         ),
                         modifier = Modifier.padding(bottom = 8.dp)
-
                     )
-
-
                 }
 
                 PokemonStatus.SUCCESS -> {
@@ -89,7 +85,7 @@ fun PokemonDetailScreen(
                     ) {
                         // Display the name above the image
                         Text(
-                            text = pokemon?.name ?: "",
+                            text = pokemon.name,
                             style = TextStyle(
                                 color = Color.Black,
                                 fontSize = 20.sp
@@ -97,9 +93,19 @@ fun PokemonDetailScreen(
                             modifier = Modifier.padding(bottom = 8.dp)
 
                         )
+                        Text(
+                            text = pokemon.hp,
+                            style = TextStyle(
+                                color = Color.Black,
+                                fontSize = 20.sp
+                            ),
+                            modifier = Modifier.padding(bottom = 8.dp)
+
+                        )
+
                         // Display the image using Coil's AsyncImage
                         AsyncImage(
-                            model = pokemon?.sprites ?: "",
+                            model = pokemon.sprites,
                             contentDescription = "Pokemon Image",
                             modifier = Modifier
                                 .padding(8.dp)

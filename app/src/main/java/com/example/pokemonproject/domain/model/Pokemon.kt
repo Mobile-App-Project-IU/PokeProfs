@@ -13,6 +13,17 @@ data class Pokemon(
     val weight: Int,
     val stats: List<PokemonStat>,
 )
+data class PokemonStat(
+    @SerializedName("base_stat")
+    val baseStat: Int,
+    val effort: Int,
+    val stat: PokemonStatX
+)
+
+data class PokemonStatX(
+    val name: String,
+    val url: String
+)
 data class PokemonType(
     val id:Int,
     val type: Type
@@ -43,17 +54,7 @@ data class PokemonState(
     var pokemon: PokemonDTO? =null
 
     )
-data class PokemonStat(
-    @SerializedName("base_stat")
-    val baseStat: Int,
-    val effort: Int,
-    val stat: PokemonStatX
-)
 
-data class PokemonStatX(
-    val name: String,
-    val url: String
-)
 
 //data class Pokemon(val name:String,val abilities:List<PokemonAbility>)
 //data class PokemonAbility(val is_hidden:Boolean, val slot:Int, val ability:NamedAPIResource)
