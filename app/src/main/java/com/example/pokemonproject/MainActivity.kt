@@ -18,11 +18,9 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             MyApplicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    PokemonScreen(
-                        innerPadding = innerPadding, context = this@MainActivity
-                    )
-                }
+                PokemonScreen(
+                    context = this@MainActivity
+                )
             }
         }
     }
