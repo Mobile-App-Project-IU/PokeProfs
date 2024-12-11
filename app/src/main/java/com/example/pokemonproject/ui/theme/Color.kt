@@ -16,7 +16,7 @@ fun elementColor(type: String): Color {
         "fire" -> Color(0xFFFF5722) // Red-orange
         "water" -> Color(0xFF2196F3) // Deep blue
         "electric" -> Color(0xFFFFEB3B) // Bright yellow
-        "grass" -> Color(0xFF4CAF50) // Fresh green
+        "grass" -> Color(0xFF008840) // Fresh green
         "ice" -> Color(0xFF81D4FA) // Cool light blue
         "fighting" -> Color(0xFFB71C1C) // Strong red
         "poison" -> Color(0xFF9C27B0) // Purple
