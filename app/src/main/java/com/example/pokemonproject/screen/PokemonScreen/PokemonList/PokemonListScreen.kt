@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -48,8 +50,14 @@ import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
 import com.example.pokemonproject.utils.isInternetAvailable
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import com.example.myapplication.ui.theme.elementColor
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonListScreen(
     viewModel: PokemonListViewModel = hiltViewModel(),
@@ -61,6 +69,21 @@ fun PokemonListScreen(
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
     Column {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MaterialTheme.colorScheme.primary)
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Pokemons",
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(10.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,7 +127,6 @@ fun PokemonListScreen(
                 val pokemonList = pokemonState.pokemonList
                 LazyColumn(
                     contentPadding = PaddingValues(
-                        top = innerPadding.calculateTopPadding() + 10.dp,
                         start = 20.dp,
                         end = 20.dp,
                         bottom = innerPadding.calculateBottomPadding() + 10.dp
@@ -146,12 +168,18 @@ fun PokemonListScreen(
 @Composable
 fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit) {
     val isConnected = remember { isInternetAvailable(context) }
-
+    val cardBackgroundColor = if (pokemon.types.isNotEmpty()) {
+        elementColor(pokemon.types.first()).copy(alpha = 0.5f) // 50% opacity
+    } else {
+        Color(0xFFE0E0E0)
+    }
     Card(
         modifier = Modifier
 
-            .fillMaxWidth()
-            .background(Color(0xFFE0E0E0)),
+            .fillMaxWidth(),
+        colors = androidx.compose.material3.CardDefaults.cardColors( // Use CardDefaults to set the background color
+            containerColor = cardBackgroundColor
+        ),
         onClick = onPokemonClick
 
     ) {
@@ -164,9 +192,10 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
                 modifier = Modifier
                     .border(
                         width = 2.dp,
-                        color = Color(173, 216, 230), // Light blue color
+                        color = Color(173, 216, 230),
                         shape = RoundedCornerShape(4.dp)
                     )
+                    .size(100.dp)
                     .padding(10.dp) // Adjusted padding for image fitting
             ) {
                 if(!isConnected){
@@ -176,8 +205,8 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
                         model = pokemon.sprites,
                         contentDescription = pokemon.name,
                         modifier = Modifier
-                            .height(40.dp)
-                            .width(40.dp) // Adjusted size for image fitting
+                            .height(100.dp)
+                            .width(100.dp) // Adjusted size for image fitting
                             .clip(RoundedCornerShape(4.dp)),
                         contentScale = ContentScale.Crop
                     )
@@ -192,7 +221,12 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
             Column(
                 modifier = Modifier.weight(1f)
             ) {
-                Text(text = pokemon.name)
+                Text(
+                    text = pokemon.name,
+                    maxLines = 1, // Restrict to one line
+                    overflow = TextOverflow.Ellipsis, // Show "..." if the text overflows
+                    modifier = Modifier.fillMaxWidth() // Ensure the text expands to available width
+                )
                 Text(
                     text = "#${pokemon.id}",
                     color = Color.Gray
@@ -227,26 +261,3 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
         }    }
 }
 
-fun elementColor(type: String): Color {
-    return when (type.lowercase()) {
-        "normal" -> Color(0xFF9E9E9E) // Grayish neutral
-        "fire" -> Color(0xFFFF5722) // Red-orange
-        "water" -> Color(0xFF2196F3) // Deep blue
-        "electric" -> Color(0xFFFFEB3B) // Bright yellow
-        "grass" -> Color(0xFF4CAF50) // Fresh green
-        "ice" -> Color(0xFF81D4FA) // Cool light blue
-        "fighting" -> Color(0xFFB71C1C) // Strong red
-        "poison" -> Color(0xFF9C27B0) // Purple
-        "ground" -> Color(0xFFD7C297) // Earthy tan
-        "flying" -> Color(0xFF90CAF9) // Soft light blue
-        "psychic" -> Color(0xFFF06292) // Light pink
-        "bug" -> Color(0xFF8BC34A) // Light green
-        "rock" -> Color(0xFF795548) // Brown
-        "ghost" -> Color(0xFF673AB7) // Dark purple
-        "dragon" -> Color(0xFF1976D2) // Strong blue
-        "dark" -> Color(0xFF212121) // Deep gray/black
-        "steel" -> Color(0xFFB0BEC5) // Metallic gray
-        "fairy" -> Color(0xFFF48FB1) // Light pink
-        else -> Color.Gray // Default for unknown types
-    }
-}

@@ -19,11 +19,13 @@ class PokemonScreenViewModel @Inject constructor (private val repository: Pokemo
         )
         try {
             repository.fetchPokemonData(pokemonID) { pokemonDTO ->
+
                 _pokemonState.value = _pokemonState.value?.copy(
                     status = PokemonStatus.SUCCESS,
                     pokemon = pokemonDTO
                 )
             }
+
         } catch (e: Exception) {
             _pokemonState.value = _pokemonState.value?.copy(
                 status = PokemonStatus.ERROR
