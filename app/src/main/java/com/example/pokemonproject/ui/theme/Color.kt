@@ -1,6 +1,7 @@
 package com.example.myapplication.ui.theme
 
 import androidx.compose.ui.graphics.Color
+import com.example.myapplication.R
 
 val Purple80 = Color(0xFFD0BCFF)
 val PurpleGrey80 = Color(0xFFCCC2DC)
@@ -33,3 +34,28 @@ fun elementColor(type: String): Color {
         else -> Color.Gray // Default for unknown types
     }
 }
+
+fun elementIcon(type: String) : Int {
+    return when (type.lowercase()) {
+        "normal" ->  R.drawable.normal
+        "fire" -> R.drawable.fire // Red-orange
+        "water" -> R.drawable.water // Deep blue
+        "electric" -> R.drawable.electric // Bright yellow
+        "grass" -> R.drawable.grass // Fresh green
+        "ice" -> R.drawable.water// Cool light blue
+        "fighting" -> R.drawable.fighting // Strong red
+        "poison" -> R.drawable.ghost // Purple
+        "ground" -> R.drawable.fighting // Earthy tan
+        "flying" -> R.drawable.normal // Soft light blue
+        "psychic" -> R.drawable.normal // Light pink
+        "bug" -> R.drawable.grass // Light green
+        "rock" -> R.drawable.normal // Brown
+        "ghost" -> R.drawable.ghost // Dark purple
+        "dragon" -> R.drawable.fire// Strong blue
+        "dark" -> R.drawable.ghost // Deep gray/black
+        "steel" -> R.drawable.normal // Metallic gray
+        "fairy" -> R.drawable.fairy// Light pink
+        else ->R.drawable.normal // Default for unknown types
+    }
+}
+
