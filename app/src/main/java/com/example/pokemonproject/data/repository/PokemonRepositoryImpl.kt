@@ -16,7 +16,6 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
     override suspend fun fetchPokemonData(pokemonID: Int, param: (PokemonDTO) -> Unit): PokemonDTO {
         val response: Response<Pokemon> = pokemonApi.getPokemon(pokemonID)
         val characteristicResponse:Response<ResponseModel> = pokemonApi.getCharacteristic(1)
-        val characteristic= characteristicResponse.body()?:ResponseModel(listOf())
         if (response.isSuccessful) {
             val pokemon = response.body() ?: throw Exception("Empty response body")
             var des:String=" ";
