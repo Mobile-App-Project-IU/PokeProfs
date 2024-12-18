@@ -3,7 +3,7 @@ package com.example.pokemonproject.data.di
 import android.content.Context
 import androidx.room.Room
 import com.example.pokemonproject.data.Room.AppDatabase
-import com.example.pokemonproject.data.Room.DAO.PokemonDao
+import com.example.pokemonproject.data.Room.PokemonDao
 import com.example.pokemonproject.data.network.PokemonApi
 import com.example.pokemonproject.data.repository.PokemonRepositoryImpl
 import com.example.pokemonproject.domain.repository.PokemonRepository
@@ -46,4 +46,5 @@ object AppModule {
     @Provides
     fun providePokemonRepository(api: PokemonApi): PokemonRepository =
         PokemonRepositoryImpl(pokemonApi = api)
+
 }

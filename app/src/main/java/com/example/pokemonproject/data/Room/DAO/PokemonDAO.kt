@@ -1,4 +1,4 @@
-package com.example.pokemonproject.data.Room.DAO
+package com.example.pokemonproject.data.Room
 
 import androidx.room.Dao
 import androidx.room.Insert
@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 interface PokemonDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(example: PokemonEntity)
-
     @Query("SELECT * FROM example_table")
     fun getAll(): Flow<List<PokemonEntity>>
 }

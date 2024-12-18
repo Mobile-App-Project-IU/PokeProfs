@@ -1,6 +1,6 @@
 package com.example.pokemonproject.data.repository
 
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.data.network.PokemonApi
 import com.example.pokemonproject.domain.model.Pokemon
 import com.example.pokemonproject.domain.model.ResponseModel
@@ -59,5 +59,13 @@ class PokemonRepositoryImpl @Inject constructor(private val pokemonApi: PokemonA
          val characteristicResponse:Response<ResponseModel> = pokemonApi.getCharacteristic(id)
          val characteristic= characteristicResponse.body()?:ResponseModel(listOf())
          return characteristic.descriptions[7].description;
+    }
+
+    override suspend fun insertPokemon(pokemonDTO: PokemonDTO) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun getPokemonList(): List<PokemonDTO> {
+        TODO("Not yet implemented")
     }
 }

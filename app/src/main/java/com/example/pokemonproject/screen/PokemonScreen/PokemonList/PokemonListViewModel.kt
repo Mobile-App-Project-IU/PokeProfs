@@ -4,7 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.domain.repository.PokemonRepository
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus

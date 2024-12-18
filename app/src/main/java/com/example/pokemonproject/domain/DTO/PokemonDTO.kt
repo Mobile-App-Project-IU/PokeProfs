@@ -1,4 +1,4 @@
-package com.example.pokemonproject.data.network.DTO
+package com.example.pokemonproject.domain.DTO
 
 
 

@@ -1,6 +1,6 @@
 package com.example.pokemonproject.domain.model
 
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.google.gson.annotations.SerializedName
 
 data class Pokemon(

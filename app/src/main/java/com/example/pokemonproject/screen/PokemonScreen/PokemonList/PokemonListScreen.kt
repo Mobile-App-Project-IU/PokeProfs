@@ -45,7 +45,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
@@ -166,7 +166,7 @@ fun PokemonListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("InvalidColorHexValue")
 @Composable
-fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit) {
+fun PokemonCard(pokemon: PokemonDTO, context: Context, onPokemonClick: () -> Unit) {
     val isConnected = remember { isInternetAvailable(context) }
     val cardBackgroundColor = if (pokemon.types.isNotEmpty()) {
         elementColor(pokemon.types.first()).copy(alpha = 0.5f) // 50% opacity
