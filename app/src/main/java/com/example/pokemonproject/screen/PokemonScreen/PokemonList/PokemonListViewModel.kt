@@ -30,7 +30,7 @@ class PokemonListViewModel @Inject constructor (private val repository: PokemonR
         )
         viewModelScope.launch {
             try {
-                originalLList = repository.fetchPokemonList()
+                originalLList = repository.getPokemonData()
                 _pokemonState.value = _pokemonState.value?.copy(
                     status = PokemonStatus.SUCCESS, pokemonList = originalLList
                 )
