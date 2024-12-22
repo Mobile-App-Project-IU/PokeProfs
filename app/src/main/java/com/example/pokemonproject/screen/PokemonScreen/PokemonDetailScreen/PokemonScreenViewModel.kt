@@ -1,5 +1,6 @@
 package com.example.pokemonproject.screen.PokemonScreen.PokemonDetailScreen
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -18,14 +19,12 @@ class PokemonScreenViewModel @Inject constructor (private val repository: Pokemo
             status = PokemonStatus.LOADING
         )
         try {
-//            repository.fetchPokemon(pokemonID) { pokemonDTO ->
-//
-//                _pokemonState.value = _pokemonState.value?.copy(
-//                    status = PokemonStatus.SUCCESS,
-//                    pokemon = pokemonDTO
-//                )
-//            }
-
+            val pokemonDTO = repository.getLocalPokemonDataById(pokemonID)
+            Log.d("PokemonScreenViewModel", "fetchPokemon: $pokemonDTO")
+            _pokemonState.value = _pokemonState.value?.copy(
+                status = PokemonStatus.SUCCESS,
+                pokemon = pokemonDTO
+            )
         } catch (e: Exception) {
             _pokemonState.value = _pokemonState.value?.copy(
                 status = PokemonStatus.ERROR

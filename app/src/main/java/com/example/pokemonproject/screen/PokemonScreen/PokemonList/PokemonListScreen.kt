@@ -198,21 +198,22 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context, onPokemonClick: () -> Uni
                     .size(100.dp)
                     .padding(10.dp) // Adjusted padding for image fitting
             ) {
-                if(!isConnected){
-                    Text(text ="No image")
-                }else{
-                    AsyncImage(
-                        model = pokemon.sprites,
-                        contentDescription = pokemon.name,
-                        modifier = Modifier
-                            .height(100.dp)
-                            .width(100.dp) // Adjusted size for image fitting
-                            .clip(RoundedCornerShape(4.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-
-
-                }
+                AsyncImage(
+                    model = pokemon.sprites,
+                    contentDescription = pokemon.name,
+                    modifier = Modifier
+                        .height(100.dp)
+                        .width(100.dp) // Adjusted size for image fitting
+                        .clip(RoundedCornerShape(4.dp)),
+                    contentScale = ContentScale.Crop
+                )
+//                if(!isConnected){
+//                    Text(text ="No image")
+//                }else{
+//
+//
+//
+//                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))

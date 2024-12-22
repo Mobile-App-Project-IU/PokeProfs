@@ -12,6 +12,7 @@ import com.example.pokemonproject.domain.repository.PokemonRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.toList
 import retrofit2.Response
 import javax.inject.Inject
@@ -96,7 +97,7 @@ class PokemonRepositoryImpl @Inject constructor(
     }
     //Get local pokemon data
     override suspend fun getLocalPokemonData(): List<PokemonDTO> {
-        val pokemonEntities = pokemonDao.getAll().toList().firstOrNull() ?: emptyList()
+        val pokemonEntities = pokemonDao.getAll().firstOrNull() ?: emptyList()
         return pokemonEntities.map { pokemonEntity ->
             val elements = elementDao.getElementForPokemon(pokemonEntity.id).map { it.elementType }
             PokemonDTO(
@@ -119,7 +120,7 @@ class PokemonRepositoryImpl @Inject constructor(
     }
     //Get local pokemon data by id
     override suspend fun getLocalPokemonDataById(id: Int): PokemonDTO {
-        val pokemonEntity = pokemonDao.getAll().toList().firstOrNull()?.find { it.id == id }
+        val pokemonEntity = pokemonDao.getAll().firstOrNull()?.find { it.id == id }
             ?: throw Exception("Pokemon with ID $id not found")
 
         val elements = elementDao.getElementForPokemon(id).map { it.elementType }

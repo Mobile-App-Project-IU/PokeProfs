@@ -67,7 +67,6 @@ fun PokemonDetailScreen(
     }
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     val pokemon = pokemonState.pokemon ?: PokemonDTO(types = listOf());
-
     val scrollState = rememberScrollState()
 
 
