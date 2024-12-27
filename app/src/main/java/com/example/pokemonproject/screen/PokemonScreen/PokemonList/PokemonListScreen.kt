@@ -45,7 +45,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
@@ -166,7 +166,7 @@ fun PokemonListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("InvalidColorHexValue")
 @Composable
-fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit) {
+fun PokemonCard(pokemon: PokemonDTO, context: Context, onPokemonClick: () -> Unit) {
     val isConnected = remember { isInternetAvailable(context) }
     val cardBackgroundColor = if (pokemon.types.isNotEmpty()) {
         elementColor(pokemon.types.first()).copy(alpha = 0.5f) // 50% opacity
@@ -198,21 +198,22 @@ fun PokemonCard(pokemon: PokemonDTO, context: Context,onPokemonClick: () -> Unit
                     .size(100.dp)
                     .padding(10.dp) // Adjusted padding for image fitting
             ) {
-                if(!isConnected){
-                    Text(text ="No image")
-                }else{
-                    AsyncImage(
-                        model = pokemon.sprites,
-                        contentDescription = pokemon.name,
-                        modifier = Modifier
-                            .height(100.dp)
-                            .width(100.dp) // Adjusted size for image fitting
-                            .clip(RoundedCornerShape(4.dp)),
-                        contentScale = ContentScale.Crop
-                    )
-
-
-                }
+                AsyncImage(
+                    model = pokemon.sprites,
+                    contentDescription = pokemon.name,
+                    modifier = Modifier
+                        .height(100.dp)
+                        .width(100.dp) // Adjusted size for image fitting
+                        .clip(RoundedCornerShape(4.dp)),
+                    contentScale = ContentScale.Crop
+                )
+//                if(!isConnected){
+//                    Text(text ="No image")
+//                }else{
+//
+//
+//
+//                }
             }
 
             Spacer(modifier = Modifier.width(8.dp))

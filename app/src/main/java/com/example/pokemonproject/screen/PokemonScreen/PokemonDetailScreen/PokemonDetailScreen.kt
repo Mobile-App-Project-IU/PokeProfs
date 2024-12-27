@@ -48,7 +48,7 @@ import com.example.myapplication.R
 import com.example.myapplication.ui.theme.AguDisplay
 import com.example.myapplication.ui.theme.elementColor
 import com.example.myapplication.ui.theme.elementIcon
-import com.example.pokemonproject.data.network.DTO.PokemonDTO
+import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonDetailScreen.PokemonScreenViewModel
@@ -67,7 +67,6 @@ fun PokemonDetailScreen(
     }
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     val pokemon = pokemonState.pokemon ?: PokemonDTO(types = listOf());
-
     val scrollState = rememberScrollState()
 
 

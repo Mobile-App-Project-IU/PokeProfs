@@ -1,11 +1,11 @@
-package com.example.pokemonproject.data.network.DTO
+package com.example.pokemonproject.domain.DTO
 
 
 
 data class  PokemonDTO(
     val id: Int =0,
     val name: String="",
-    val types: List<String> ,
+    val types: List<String> = listOf(),
     val sprites: String="",
     val order: String="",
     val height: String="",
