@@ -81,7 +81,6 @@ fun PokemonScreen(context: Context,) {
             NavHost(navController = navController, startDestination = PokemonListRoute) {
                 composable<PokemonListRoute> {
                     PokemonListScreen(
-                        animatedVisibilityScope = this,
                         onPokemonClick = { id ->
                             navController.navigate(PokemonDetailRout(id))
                             screen = pokemonScreen.PokeMonDetail

@@ -47,13 +47,13 @@ fun elementIcon(type: String) : Int {
         "poison" -> R.drawable.ghost // Purple
         "ground" -> R.drawable.fighting // Earthy tan
         "flying" -> R.drawable.normal // Soft light blue
-        "psychic" -> R.drawable.normal // Light pink
+        "psychic" -> R.drawable.ghost // Light pink
         "bug" -> R.drawable.grass // Light green
-        "rock" -> R.drawable.normal // Brown
+        "rock" -> R.drawable.fighting // Brown
         "ghost" -> R.drawable.ghost // Dark purple
-        "dragon" -> R.drawable.fire// Strong blue
-        "dark" -> R.drawable.ghost // Deep gray/black
-        "steel" -> R.drawable.normal // Metallic gray
+        "dragon" -> R.drawable.normal// Strong blue
+        "dark" -> R.drawable.dark // Deep gray/black
+        "steel" -> R.drawable.steel // Metallic gray
         "fairy" -> R.drawable.fairy// Light pink
         else ->R.drawable.normal // Default for unknown types
     }

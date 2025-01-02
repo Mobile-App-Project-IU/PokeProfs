@@ -21,46 +21,46 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object AppModule {
 
-    private const val BASE_URL = "https://pokeapi.co/api/v2/"
+    private const val BASE_URL = "https://pokeapi.co/api/v2/" // API Base URL for Pokémon data
+
+    // Provides a Retrofit instance for API calls
     @Provides
     @Singleton
-    fun pokemonPokemonApi(): PokemonApi {
-        return  Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(PokemonApi::class.java)
-    }
-    @Singleton
+    fun providePokemonApi(): PokemonApi = Retrofit.Builder()
+        .baseUrl(BASE_URL)
+        .addConverterFactory(GsonConverterFactory.create())
+        .build()
+        .create(PokemonApi::class.java)
+
+    // Provides the Pokémon repository, combining API and local database sources
     @Provides
+    @Singleton
     fun providePokemonRepository(
         api: PokemonApi,
         pokemonDao: PokemonDAO,
         elementDao: ElementDAO
-    ): PokemonRepository =
-        PokemonRepositoryImpl(
-            pokemonApi = api,
-            pokemonDao = pokemonDao,
-            elementDao = elementDao
-        )
+    ): PokemonRepository = PokemonRepositoryImpl(
+        pokemonApi = api,
+        pokemonDao = pokemonDao,
+        elementDao = elementDao
+    )
 
+    // Provides a Room database instance for local data storage
     @Provides
     @Singleton
-    fun provideDatabase(@ApplicationContext context: Context): PokemonDatabase {
-        return Room.databaseBuilder(
+    fun provideDatabase(@ApplicationContext context: Context): PokemonDatabase =
+        Room.databaseBuilder(
             context,
             PokemonDatabase::class.java,
-            "pokemon_database"
-        ).build()
-    }
+            "pokemon_database" // Database name
+        ).fallbackToDestructiveMigration() // Handle migrations for simplicity
+            .build()
 
+    // Provides the DAO for Pokémon-related database operations
     @Provides
-    fun providePokemonDao(database: PokemonDatabase): PokemonDAO {
-        return database.pokemonDao()
-    }
-    @Provides
-    fun provideElementDao(database: PokemonDatabase): ElementDAO {
-        return database.elementDao()
-    }
+    fun providePokemonDao(database: PokemonDatabase): PokemonDAO = database.pokemonDao()
 
+    // Provides the DAO for Element-related database operations
+    @Provides
+    fun provideElementDao(database: PokemonDatabase): ElementDAO = database.elementDao()
 }

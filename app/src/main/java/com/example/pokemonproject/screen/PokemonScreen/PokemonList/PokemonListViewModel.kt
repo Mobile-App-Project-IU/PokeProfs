@@ -13,45 +13,52 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class PokemonListViewModel @Inject constructor (private val repository: PokemonRepository ) : ViewModel() {
-
+class PokemonListViewModel @Inject constructor(
+    private val repository: PokemonRepository
+) : ViewModel() {
 
     private val _pokemonState = MutableLiveData(PokemonState())
     val pokemonState: LiveData<PokemonState> = _pokemonState
-    private var originalLList: List<PokemonDTO> = emptyList()
 
+    private var originalList: List<PokemonDTO> = emptyList()
 
     init {
         fetchPokemonData()
     }
+
+    // Fetch Pokémon data
     private fun fetchPokemonData() {
-        _pokemonState.value = _pokemonState.value?.copy(
-            status = PokemonStatus.LOADING
-        )
+        updateState(PokemonStatus.LOADING)
         viewModelScope.launch {
             try {
-                originalLList = repository.getPokemonData()
-                _pokemonState.value = _pokemonState.value?.copy(
-                    status = PokemonStatus.SUCCESS, pokemonList = originalLList
-                )
+                originalList = repository.getPokemonData()
+                updateState(PokemonStatus.SUCCESS, pokemonList = originalList)
             } catch (e: Exception) {
-                _pokemonState.value = _pokemonState.value?.copy(
-                    status = PokemonStatus.ERROR
-                )
+                updateState(PokemonStatus.ERROR)
             }
         }
     }
+
+    // Update state utility
+    private fun updateState(
+        status: PokemonStatus,
+        pokemonList: List<PokemonDTO> = _pokemonState.value?.pokemonList ?: emptyList(),
+        pokemon: PokemonDTO? = _pokemonState.value?.pokemon
+    ) {
+        _pokemonState.value = PokemonState(
+            pokemonList = pokemonList,
+            status = status,
+            pokemon = pokemon
+        )
+    }
+
+    // Dynamic search Pokémon
     fun searchPokemon(query: String?) {
-        _pokemonState.value = _pokemonState.value?.copy(
-            status = PokemonStatus.LOADING
-        )
         val filteredList = if (query.isNullOrBlank()) {
-            originalLList
+            originalList
         } else {
-            originalLList.filter { it.name.equals(query, ignoreCase = true) }
+            originalList.filter { it.name.contains(query, ignoreCase = true) }
         }
-        _pokemonState.value = _pokemonState.value?.copy(
-            status = PokemonStatus.SUCCESS, pokemonList = filteredList
-        )
+        updateState(PokemonStatus.SUCCESS, pokemonList = filteredList)
     }
 }

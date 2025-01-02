@@ -22,22 +22,25 @@ class PokemonRepositoryImpl @Inject constructor(
     private val pokemonDao: PokemonDAO,
     private val elementDao: ElementDAO
 ) : PokemonRepository {
-        //View model use this function to get the pokemon data
-        override suspend fun getPokemonData(): List<PokemonDTO> {
-            val pokemonList = getLocalPokemonData()
-            if (pokemonList.isNotEmpty()) {
-                return pokemonList
-            }
-            return fetchPokemonData()
+
+    // Function to get Pokémon data, first checking locally and then remotely if necessary
+    override suspend fun getPokemonData(): List<PokemonDTO> {
+        // Check for local Pokémon data first
+        val pokemonList = getLocalPokemonData()
+        if (pokemonList.isNotEmpty()) {
+            return pokemonList // Return local data if available
         }
-    //fetch online data
+        return fetchPokemonData() // Fetch remote data if no local data
+    }
+
+    // Function to fetch Pokémon data from the remote API
     override suspend fun fetchPokemonData(): List<PokemonDTO> = coroutineScope {
         (1..151).map { pokemonID ->
             async {
                 val response: Response<Pokemon> = pokemonApi.getPokemon(pokemonID)
                 if (response.isSuccessful) {
                     val pokemon = response.body() ?: throw Exception("Empty response body")
-                    val description = " " // You can modify this to include actual description logic if needed
+                    val description = " " // Placeholder for Pokémon description (to be expanded)
                     val pokemonDTO = PokemonDTO(
                         id = pokemon.id,
                         name = pokemon.name,
@@ -54,20 +57,23 @@ class PokemonRepositoryImpl @Inject constructor(
                         speed = pokemon.stats[5].baseStat.toString(),
                         description = description
                     )
-                    insertPokemon(pokemonDTO)
-                    pokemonDTO
+                    insertPokemon(pokemonDTO) // Save the fetched data in the local database
+                    pokemonDTO // Return the mapped DTO
                 } else {
                     throw Exception("Failed to fetch data: ${response.errorBody()?.string()}")
                 }
             }
-        }.awaitAll()
+        }.awaitAll() // Await all async tasks to be completed
     }
-    override suspend fun fetchCharacteristic(id:Int):String{
-        val characteristicResponse:Response<ResponseModel> = pokemonApi.getCharacteristic(id)
-        val characteristic= characteristicResponse.body()?:ResponseModel(listOf())
-        return characteristic.descriptions[7].description;
+
+    // Function to fetch a Pokémon's characteristics (such as description)
+    override suspend fun fetchCharacteristic(id: Int): String {
+        val characteristicResponse: Response<ResponseModel> = pokemonApi.getCharacteristic(id)
+        val characteristic = characteristicResponse.body() ?: ResponseModel(listOf())
+        return characteristic.descriptions[7].description // Return the 8th description (example)
     }
-    //Room database insert pokemon
+
+    // Insert a Pokémon into the local Room database
     override suspend fun insertPokemon(pokemonDTO: PokemonDTO) {
         val pokemonEntity = PokemonEntity(
             id = pokemonDTO.id,
@@ -84,18 +90,19 @@ class PokemonRepositoryImpl @Inject constructor(
             speed = pokemonDTO.speed,
             description = pokemonDTO.description
         )
-        pokemonDao.insert(pokemonEntity)
+        pokemonDao.insert(pokemonEntity) // Insert Pokémon entity into the database
 
-        // Insert elements into the ElementDAO
+        // Insert elements (types) into the Element DAO
         pokemonDTO.types.forEach { elementType ->
             val elementEntity = ElementEntity(
                 id = pokemonDTO.id,
                 elementType = elementType
             )
-            elementDao.insertElement(elementEntity)
+            elementDao.insertElement(elementEntity) // Insert element into the database
         }
     }
-    //Get local pokemon data
+
+    // Retrieve local Pokémon data from the Room database
     override suspend fun getLocalPokemonData(): List<PokemonDTO> {
         val pokemonEntities = pokemonDao.getAll().firstOrNull() ?: emptyList()
         return pokemonEntities.map { pokemonEntity ->
@@ -118,7 +125,8 @@ class PokemonRepositoryImpl @Inject constructor(
             )
         }
     }
-    //Get local pokemon data by id
+
+    // Retrieve local Pokémon data for a specific Pokémon ID from the Room database
     override suspend fun getLocalPokemonDataById(id: Int): PokemonDTO {
         val pokemonEntity = pokemonDao.getAll().firstOrNull()?.find { it.id == id }
             ?: throw Exception("Pokemon with ID $id not found")
