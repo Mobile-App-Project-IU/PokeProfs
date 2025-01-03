@@ -1,46 +1,137 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.example.pokemonproject.screen.PokemonScreen
 
 import PokemonDetailScreen
 import PokemonListScreen
 import android.content.Context
-import androidx.annotation.StringRes
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import com.example.myapplication.R
-
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
-enum class pokemonScreen(val title: String) {
-    PokeMonDetail("PokeMonDetail"),
-    PokeMonList("PokeMonList")
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
+
+
+enum class PokemonScreen(val title: String) {
+    PokemonDetail("Pokemon Detail"),
+    PokemonList("Pokemon List")
 }
-@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalMaterial3Api::class)
+
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
 @Composable
-fun PokemonAppBar(
-    pokemonScreen:pokemonScreen,
+fun PokemonScreen(context: Context) {
+    val navController = rememberNavController()
+    var screen by remember { mutableStateOf(PokemonScreen.PokemonList) }
+    var canNavigateBack by remember { mutableStateOf(false) }
+    val drawerState = rememberDrawerState(DrawerValue.Closed)
+    val coroutineScope = rememberCoroutineScope()
+
+    // BoxWithConstraints to get maxWidth and maxHeight
+    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() } // Convert to Dp
+
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                if (drawerState.isOpen) {
+                    Surface(
+                        modifier = Modifier
+                            .width(screenWidth * 0.5f), // Set width to 50% of screen width
+                        color = MaterialTheme.colorScheme.surface,
+                        contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
+                    ) {
+                        DrawerContent(onOptionSelected = { option ->
+                            when (option) {
+                                "Pokedex" -> { /* Navigate to Pokedex */ }
+                                "Pokemon Team" -> { /* Navigate to Pokemon Team */ }
+                                "Help & Feedback" -> { /* Show Help & Feedback */ }
+                                "About Us" -> { /* Show About Us */ }
+                            }
+                            coroutineScope.launch { drawerState.close() }
+                        })
+                    }
+                }
+            }
+        ) {
+            Scaffold(
+                modifier = Modifier.fillMaxSize(),
+                topBar = {
+                    PokemonAppBarWithMenu(
+                        pokemonScreen = screen,
+                        canNavigateBack = canNavigateBack,
+                        navigateUp = {
+                            navController.popBackStack()
+                            canNavigateBack = false
+                            screen = PokemonScreen.PokemonList
+                        },
+                        onMenuClick = {
+                            coroutineScope.launch {
+                                // Open the drawer with a smooth transition
+                                drawerState.open()
+                            }
+                        }
+                    )
+                }
+            ) { innerPadding ->
+                SharedTransitionLayout {
+                    NavHost(navController = navController, startDestination = PokemonListRoute) {
+                        composable<PokemonListRoute> {
+                            PokemonListScreen(
+                                onPokemonClick = { id ->
+                                    navController.navigate(PokemonDetailRout(id))
+                                    screen = PokemonScreen.PokemonDetail
+                                    canNavigateBack = true
+                                },
+                                innerPadding = innerPadding,
+                                context = context
+                            )
+                        }
+                        composable<PokemonDetailRout> {
+                            val args = it.toRoute<PokemonDetailRout>()
+                            PokemonDetailScreen(
+                                animatedVisibilityScope = this,
+                                id = args.id,
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+
+@Composable
+fun PokemonAppBarWithMenu(
+    pokemonScreen: PokemonScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
+    onMenuClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -54,57 +145,72 @@ fun PokemonAppBar(
                 IconButton(onClick = navigateUp) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
-                        contentDescription = "back"
+                        contentDescription = "Back"
+                    )
+                }
+            } else {
+                IconButton(onClick = onMenuClick) {
+                    Icon(
+                        imageVector = Icons.Filled.Menu,
+                        contentDescription = "Menu"
                     )
                 }
             }
         }
     )
 }
-@OptIn(ExperimentalSharedTransitionApi::class)
+
 @Composable
-fun PokemonScreen(context: Context,) {
-    val navController = rememberNavController()
-    var screen by remember { mutableStateOf(pokemonScreen.PokeMonList) }
-    var navigate by remember { mutableStateOf(false) }
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        PokemonAppBar(
-            pokemonScreen = screen,
-            canNavigateBack = navigate,
-            navigateUp = { navController.popBackStack();
-                navigate = false;
-                screen=pokemonScreen.PokeMonList
-            }
-        )
-    }) { innerPadding ->
-        SharedTransitionLayout {
-            NavHost(navController = navController, startDestination = PokemonListRoute) {
-                composable<PokemonListRoute> {
-                    PokemonListScreen(
-                        onPokemonClick = { id ->
-                            navController.navigate(PokemonDetailRout(id))
-                            screen = pokemonScreen.PokeMonDetail
-                            navigate = true
-                        },
-                        innerPadding = innerPadding,
-                        context = context
-                    )
-                }
-                composable<PokemonDetailRout> {
-                    val args = it.toRoute<PokemonDetailRout>()
-                    PokemonDetailScreen(
-                        animatedVisibilityScope = this,
-                        id = args.id,
-                    )
-                }
+fun DrawerContent(onOptionSelected: (String) -> Unit) {
+    Column(modifier = Modifier.fillMaxSize()) {
+        // Header Section with app name
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.primary
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = "PokeProfs",
+                    style = MaterialTheme.typography.headlineSmall,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+//                // Optionally, add a profile picture here
+//                Icon(Icons.Filled.Menu, contentDescription = "Profile", tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
 
+        Divider()
 
+        // Menu options
+        val options = listOf("Pokedex", "Pokemon Team", "Help & Feedback", "About Us")
+        options.forEach { option ->
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable { onOptionSelected(option) }
+            ) {
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = option,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.padding(vertical = 12.dp)
+                )
+            }
+            Divider()
+        }
+
+        // Footer Section (Optional)
+        Spacer(modifier = Modifier.weight(1f)) // To push footer to the bottom
+        Divider()
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+//            TextButton(onClick = { onOptionSelected("Settings") }) {
+//                Text("Settings")
+//            }
+        }
     }
-
 }
-
 
 
 @Serializable
