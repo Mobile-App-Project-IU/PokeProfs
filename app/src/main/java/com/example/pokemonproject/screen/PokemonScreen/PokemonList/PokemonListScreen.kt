@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -44,12 +45,12 @@ fun PokemonListScreen(
     innerPadding: PaddingValues,
     context: Context,
     onPokemonClick: (Int) -> Unit,
-    isFilterMenuVisible: Boolean, // Add filter visibility state
-    onFilterVisibilityChanged: (Boolean) -> Unit // Callback for state updates
+    isFilterMenuVisible: Boolean,
+    onFilterVisibilityChanged: (Boolean) -> Unit
 ) {
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
-    val keyboardController = LocalSoftwareKeyboardController.current // Get the keyboard controller
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     val pokemonTypes = listOf(
         "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
@@ -70,12 +71,11 @@ fun PokemonListScreen(
         },
         content = {
             Column(modifier = Modifier.padding(it)) {
-                // Search bar below the top app bar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp)
-                        .padding(top = 8.dp),  // Added padding to separate from the app bar
+                        .padding(top = 8.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TextField(
@@ -94,11 +94,22 @@ fun PokemonListScreen(
                                 keyboardController?.hide()
                             }
                         ),
-                        colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.surface)
+                        colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.surface),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                // Hide the keyboard when the search icon is clicked
+                                keyboardController?.hide()
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Search, // Use the search icon
+                                    contentDescription = "Search Icon"
+                                )
+                            }
+                        }
                     )
                 }
 
-                AnimatedVisibility(visible = isFilterMenuVisible) {
+                    AnimatedVisibility(visible = isFilterMenuVisible) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -106,7 +117,6 @@ fun PokemonListScreen(
                             .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
                             .padding(8.dp)
                     ) {
-                        // Make the filter menu scrollable
                         LazyColumn {
                             items(pokemonTypes) { type ->
                                 val typeColor = elementColor(type)
@@ -115,26 +125,25 @@ fun PokemonListScreen(
                                         .fillMaxWidth()
                                         .padding(vertical = 4.dp)
                                         .clip(RoundedCornerShape(8.dp))
-                                        .background(typeColor) // Set the background color for each row
+                                        .background(typeColor)
                                         .clickable {
                                             if (type == "all") {
-                                                // Reset filter if "All" is clicked
                                                 viewModel.filterPokemonByType("")
-                                                onFilterVisibilityChanged(false) // Close filter menu
+                                                onFilterVisibilityChanged(false)
                                             } else {
                                                 viewModel.filterPokemonByType(type)
-                                                onFilterVisibilityChanged(false) // Close filter menu
+                                                onFilterVisibilityChanged(false)
                                             }
                                         }
                                 ) {
                                     Text(
-                                        text = type.replaceFirstChar { it.uppercase() }, // Capitalize first letter
+                                        text = type.replaceFirstChar { it.uppercase() },
                                         style = MaterialTheme.typography.bodyMedium,
-                                        color = Color.White, // Make the text white for better contrast
+                                        color = Color.White,
                                         modifier = Modifier
-                                            .padding(8.dp) // Add padding inside the row
-                                            .fillMaxWidth(), // Fill the width to center the text
-                                        textAlign = TextAlign.Center // Center the text
+                                            .padding(8.dp)
+                                            .fillMaxWidth(),
+                                        textAlign = TextAlign.Center
                                     )
                                 }
                             }
@@ -142,36 +151,46 @@ fun PokemonListScreen(
                     }
                 }
 
-
-                // Display Pokémon list as before
+                // Display Pokémon list or notification messages
                 when (pokemonState.status) {
                     PokemonStatus.LOADING -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) { CircularProgressIndicator() }
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            CircularProgressIndicator()
+                        }
                     }
                     PokemonStatus.ERROR -> {
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) { Text("Error loading Pokémon.", color = MaterialTheme.colorScheme.error) }
+                        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text("Error loading Pokémon.", color = MaterialTheme.colorScheme.error)
+                        }
                     }
                     PokemonStatus.SUCCESS -> {
-                        LazyColumn(
-                            contentPadding = PaddingValues(
-                                start = 16.dp,
-                                end = 16.dp,
-                                bottom = innerPadding.calculateBottomPadding() + 10.dp
-                            ),
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            items(pokemonState.pokemonList) { pokemon ->
-                                PokeProfsPokemonCard(
-                                    pokemon = pokemon,
-                                    context = context,
-                                    onPokemonClick = { onPokemonClick(pokemon.id) }
+                        val filteredList = pokemonState.pokemonList
+
+                        // Display notification for no results if the search or filter has no matches
+                        if (filteredList.isEmpty()) {
+                            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                                Text(
+                                    text = if (searchQuery.isNotEmpty()) "No Pokémon found..." else "Coming soon!",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
+                            }
+                        } else {
+                            LazyColumn(
+                                contentPadding = PaddingValues(
+                                    start = 16.dp,
+                                    end = 16.dp,
+                                    bottom = innerPadding.calculateBottomPadding() + 10.dp
+                                ),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(filteredList) { pokemon ->
+                                    PokeProfsPokemonCard(
+                                        pokemon = pokemon,
+                                        context = context,
+                                        onPokemonClick = { onPokemonClick(pokemon.id) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -181,6 +200,7 @@ fun PokemonListScreen(
         }
     )
 }
+
 
 
 
