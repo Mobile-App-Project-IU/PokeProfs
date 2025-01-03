@@ -166,30 +166,32 @@ fun PokeProfsPokemonCard(
     }
 
     Card(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp), // Add spacing between cards
         colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
         onClick = onPokemonClick
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(8.dp)
+            modifier = Modifier.padding(16.dp) // Increase padding inside the card
         ) {
             Box(
                 modifier = Modifier
                     .border(
                         width = 2.dp,
                         color = Color(173, 216, 230),
-                        shape = RoundedCornerShape(4.dp)
+                        shape = RoundedCornerShape(8.dp) // Slightly rounder corners
                     )
-                    .size(100.dp)
-                    .padding(10.dp)
+                    .size(120.dp) // Increase the size of the image container
+                    .padding(8.dp)
             ) {
                 AsyncImage(
                     model = pokemon.sprites,
                     contentDescription = pokemon.name,
                     modifier = Modifier
                         .fillMaxSize()
-                        .clip(RoundedCornerShape(4.dp)),
+                        .clip(RoundedCornerShape(8.dp)),
                     contentScale = ContentScale.Crop
                 )
                 if (!isConnected) {
@@ -201,45 +203,47 @@ fun PokeProfsPokemonCard(
                 }
             }
 
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(16.dp)) // Increase spacing between image and text
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(end = 8.dp) // Add right padding
+            ) {
                 Text(
-                    text = pokemon.name,
-                    style = MaterialTheme.typography.bodyLarge,
+                    text = pokemon.name.replaceFirstChar { it.uppercase() }, // Capitalize the first letter
+                    style = MaterialTheme.typography.titleLarge, // Use a larger font style
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "#${pokemon.id}",
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodyMedium, // Slightly larger font size
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-            }
+                Spacer(modifier = Modifier.height(8.dp)) // Add space between text and badges
 
-            Column(
-                horizontalAlignment = Alignment.End,
-                modifier = Modifier.align(Alignment.Bottom)
-            ) {
-                Row {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Space out badges
+                ) {
                     pokemon.types.forEach { type ->
                         Text(
-                            text = type,
-                            style = MaterialTheme.typography.labelSmall,
+                            text = type.replaceFirstChar { it.uppercase() }, // Capitalize the first letter
+                            style = MaterialTheme.typography.labelMedium, // Larger text style for badges
                             color = Color.White,
                             modifier = Modifier
+                                .border(1.dp, elementColor(type), RoundedCornerShape(8.dp)) // Add border with rounder corners
                                 .background(
-                                    color = elementColor(type),
-                                    shape = RoundedCornerShape(5.dp)
+                                    color = elementColor(type).copy(alpha = 0.8f), // Higher transparency for better contrast
+                                    shape = RoundedCornerShape(8.dp)
                                 )
-                                .padding(horizontal = 6.dp, vertical = 2.dp)
-                                .clip(RoundedCornerShape(4.dp))
+                                .padding(horizontal = 12.dp, vertical = 6.dp) // Larger padding for readability
                         )
-                        Spacer(modifier = Modifier.width(4.dp))
                     }
                 }
             }
         }
     }
 }
+
