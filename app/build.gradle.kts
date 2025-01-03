@@ -97,6 +97,8 @@ dependencies {
     implementation("androidx.compose.animation:animation:1.7.5")
 
     implementation(libs.androidx.material3)
+    implementation ("androidx.compose.material:material-icons-extended:1.5.1")
+
 
 }
 kapt {

@@ -61,4 +61,15 @@ class PokemonListViewModel @Inject constructor(
         }
         updateState(PokemonStatus.SUCCESS, pokemonList = filteredList)
     }
+
+    fun filterPokemonByType(type: String) {
+        val filteredList = if (type.isEmpty()) {
+            originalList // If the type is empty, return the original list
+        } else {
+            originalList.filter { it.types.contains(type) } // Otherwise, filter by type
+        }
+        updateState(PokemonStatus.SUCCESS, pokemonList = filteredList)
+    }
+
+
 }

@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -32,9 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
-
 
 enum class PokemonScreen(val title: String) {
     PokemonDetail("Pokemon Detail"),
@@ -50,7 +49,9 @@ fun PokemonScreen(context: Context) {
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val coroutineScope = rememberCoroutineScope()
 
-    // BoxWithConstraints to get maxWidth and maxHeight
+    // State for filter visibility
+    var isFilterMenuVisible by remember { mutableStateOf(false) }
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() } // Convert to Dp
 
@@ -59,18 +60,11 @@ fun PokemonScreen(context: Context) {
             drawerContent = {
                 if (drawerState.isOpen) {
                     Surface(
-                        modifier = Modifier
-                            .width(screenWidth * 0.5f), // Set width to 50% of screen width
+                        modifier = Modifier.width(screenWidth * 0.5f),
                         color = MaterialTheme.colorScheme.surface,
                         contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
                     ) {
                         DrawerContent(onOptionSelected = { option ->
-                            when (option) {
-                                "Pokedex" -> { /* Navigate to Pokedex */ }
-                                "Pokemon Team" -> { /* Navigate to Pokemon Team */ }
-                                "Help & Feedback" -> { /* Show Help & Feedback */ }
-                                "About Us" -> { /* Show About Us */ }
-                            }
                             coroutineScope.launch { drawerState.close() }
                         })
                     }
@@ -88,12 +82,8 @@ fun PokemonScreen(context: Context) {
                             canNavigateBack = false
                             screen = PokemonScreen.PokemonList
                         },
-                        onMenuClick = {
-                            coroutineScope.launch {
-                                // Open the drawer with a smooth transition
-                                drawerState.open()
-                            }
-                        }
+                        onMenuClick = { coroutineScope.launch { drawerState.open() } },
+                        onFilterClick = { isFilterMenuVisible = !isFilterMenuVisible } // Update filter visibility state
                     )
                 }
             ) { innerPadding ->
@@ -107,7 +97,9 @@ fun PokemonScreen(context: Context) {
                                     canNavigateBack = true
                                 },
                                 innerPadding = innerPadding,
-                                context = context
+                                context = context,
+                                isFilterMenuVisible = isFilterMenuVisible, // Pass the filter state
+                                onFilterVisibilityChanged = { isFilterMenuVisible = it } // Allow child to update state
                             )
                         }
                         composable<PokemonDetailRout> {
@@ -124,14 +116,13 @@ fun PokemonScreen(context: Context) {
     }
 }
 
-
-
 @Composable
 fun PokemonAppBarWithMenu(
     pokemonScreen: PokemonScreen,
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     onMenuClick: () -> Unit,
+    onFilterClick: () -> Unit, // Add onFilterClick here
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -153,6 +144,17 @@ fun PokemonAppBarWithMenu(
                     Icon(
                         imageVector = Icons.Filled.Menu,
                         contentDescription = "Menu"
+                    )
+                }
+            }
+        },
+        actions = {
+            // Only show filter button on PokemonList screen
+            if (pokemonScreen == PokemonScreen.PokemonList) {
+                IconButton(onClick = onFilterClick) {
+                    Icon(
+                        imageVector = Icons.Filled.FilterList,
+                        contentDescription = "Filter"
                     )
                 }
             }
@@ -211,7 +213,6 @@ fun DrawerContent(onOptionSelected: (String) -> Unit) {
         }
     }
 }
-
 
 @Serializable
 data object PokemonListRoute

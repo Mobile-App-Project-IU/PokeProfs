@@ -1,14 +1,17 @@
 import android.annotation.SuppressLint
 import android.content.Context
-import androidx.compose.animation.AnimatedContentScope
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
@@ -31,6 +34,8 @@ import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
 import com.example.pokemonproject.utils.isInternetAvailable
 import com.example.myapplication.ui.theme.elementColor
+import com.example.pokemonproject.screen.PokemonScreen.PokemonAppBarWithMenu
+import com.example.pokemonproject.screen.PokemonScreen.PokemonScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,116 +44,145 @@ fun PokemonListScreen(
     innerPadding: PaddingValues,
     context: Context,
     onPokemonClick: (Int) -> Unit,
+    isFilterMenuVisible: Boolean, // Add filter visibility state
+    onFilterVisibilityChanged: (Boolean) -> Unit // Callback for state updates
 ) {
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current // Get the keyboard controller
 
-    Column {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(vertical = 16.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "PokeProfs",
-                style = MaterialTheme.typography.headlineLarge,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onPrimary
+    val pokemonTypes = listOf(
+        "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
+        "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy", "all"
+    ).sorted()
+
+    var selectedType by remember { mutableStateOf<String?>(null) }
+
+    Scaffold(
+        topBar = {
+            PokemonAppBarWithMenu(
+                pokemonScreen = PokemonScreen.PokemonList,
+                canNavigateBack = false,
+                navigateUp = { },
+                onMenuClick = { },
+                onFilterClick = { onFilterVisibilityChanged(!isFilterMenuVisible) }
             )
-        }
-
-        Spacer(modifier = Modifier.height(10.dp))
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = {
-                    searchQuery = it
-                    viewModel.searchPokemon(it) // Trigger search on text change
-                },
-                placeholder = { Text("Search Pokémon...") },
-                modifier = Modifier.weight(1f),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(
-                    onSearch = {
-                        viewModel.searchPokemon(searchQuery)
-                        keyboardController?.hide() // Hide the keyboard on search
-                    }
-                ),
-                colors = TextFieldDefaults.textFieldColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(
-                onClick = {
-                    viewModel.searchPokemon(searchQuery)
-                    keyboardController?.hide() // Hide the keyboard when Search is clicked
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                )
-            ) {
-                Text("Search")
-            }
-        }
-
-        when (pokemonState.status) {
-            PokemonStatus.LOADING -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+        },
+        content = {
+            Column(modifier = Modifier.padding(it)) {
+                // Search bar below the top app bar
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp)
+                        .padding(top = 8.dp),  // Added padding to separate from the app bar
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    CircularProgressIndicator()
+                    TextField(
+                        value = searchQuery,
+                        onValueChange = {
+                            searchQuery = it
+                            viewModel.searchPokemon(it)
+                        },
+                        placeholder = { Text("Search Pokémon...") },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
+                        keyboardActions = KeyboardActions(
+                            onSearch = {
+                                viewModel.searchPokemon(searchQuery)
+                                keyboardController?.hide()
+                            }
+                        ),
+                        colors = TextFieldDefaults.textFieldColors(containerColor = MaterialTheme.colorScheme.surface)
+                    )
                 }
-            }
-            PokemonStatus.ERROR -> {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text("Error loading Pokémon.", color = MaterialTheme.colorScheme.error)
-                }
-            }
-            PokemonStatus.SUCCESS -> {
-                val pokemonList = pokemonState.pokemonList
-                LazyColumn(
-                    contentPadding = PaddingValues(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = innerPadding.calculateBottomPadding() + 10.dp
-                    ),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    item {
-                        Text(
-                            text = "Pokédex",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                    items(pokemonList) { pokemon ->
-                        PokeProfsPokemonCard(
-                            pokemon = pokemon,
-                            context = context,
-                            onPokemonClick = { onPokemonClick(pokemon.id) }
-                        )
+
+                AnimatedVisibility(visible = isFilterMenuVisible) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(8.dp))
+                            .padding(8.dp)
+                    ) {
+                        // Make the filter menu scrollable
+                        LazyColumn {
+                            items(pokemonTypes) { type ->
+                                val typeColor = elementColor(type)
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 4.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(typeColor) // Set the background color for each row
+                                        .clickable {
+                                            if (type == "all") {
+                                                // Reset filter if "All" is clicked
+                                                viewModel.filterPokemonByType("")
+                                                onFilterVisibilityChanged(false) // Close filter menu
+                                            } else {
+                                                viewModel.filterPokemonByType(type)
+                                                onFilterVisibilityChanged(false) // Close filter menu
+                                            }
+                                        }
+                                ) {
+                                    Text(
+                                        text = type.replaceFirstChar { it.uppercase() }, // Capitalize first letter
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = Color.White, // Make the text white for better contrast
+                                        modifier = Modifier
+                                            .padding(8.dp) // Add padding inside the row
+                                            .fillMaxWidth(), // Fill the width to center the text
+                                        textAlign = TextAlign.Center // Center the text
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
+
+
+                // Display Pokémon list as before
+                when (pokemonState.status) {
+                    PokemonStatus.LOADING -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) { CircularProgressIndicator() }
+                    }
+                    PokemonStatus.ERROR -> {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) { Text("Error loading Pokémon.", color = MaterialTheme.colorScheme.error) }
+                    }
+                    PokemonStatus.SUCCESS -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(
+                                start = 16.dp,
+                                end = 16.dp,
+                                bottom = innerPadding.calculateBottomPadding() + 10.dp
+                            ),
+                            verticalArrangement = Arrangement.spacedBy(16.dp)
+                        ) {
+                            items(pokemonState.pokemonList) { pokemon ->
+                                PokeProfsPokemonCard(
+                                    pokemon = pokemon,
+                                    context = context,
+                                    onPokemonClick = { onPokemonClick(pokemon.id) }
+                                )
+                            }
+                        }
+                    }
+                    PokemonStatus.INIT -> {}
+                }
             }
-            PokemonStatus.INIT -> {}
         }
-    }
+    )
 }
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("InvalidColorHexValue")
@@ -234,11 +268,10 @@ fun PokeProfsPokemonCard(
                             color = Color.White,
                             modifier = Modifier
                                 .border(1.dp, elementColor(type), RoundedCornerShape(8.dp)) // Add border with rounder corners
-                                .background(
-                                    color = elementColor(type).copy(alpha = 0.8f), // Higher transparency for better contrast
-                                    shape = RoundedCornerShape(8.dp)
+                                .background(                                    color = elementColor(type), // Background color based on type
+                                    shape = RoundedCornerShape(8.dp) // Rounder corners for badges
                                 )
-                                .padding(horizontal = 12.dp, vertical = 6.dp) // Larger padding for readability
+                                .padding(horizontal = 8.dp, vertical = 4.dp) // Adjust padding for badge size
                         )
                     }
                 }
