@@ -47,6 +47,8 @@ import com.example.myapplication.R
 import com.example.myapplication.ui.theme.MyApplicationTheme
 import com.example.pokemonproject.data.Room.PokemonDatabase
 import com.example.pokemonproject.domain.repository.TeamRepository
+import com.example.pokemonproject.screen.PokemonScreen.AboutUsScreen.AboutUsScreen
+import com.example.pokemonproject.screen.PokemonScreen.HelpSuportScreen.HelpSupportScreen
 import com.example.pokemonproject.screen.PokemonScreen.CreateTeamScreen.CreateTeamScreen
 import com.example.pokemonproject.screen.PokemonScreen.CreateTeamScreen.CreateTeamViewModel
 import com.example.pokemonproject.screen.PokemonScreen.TeamScreen.TeamScreen
@@ -56,7 +58,9 @@ enum class PokemonScreen(val title: String) {
     PokemonDetail("Pokemon Detail"),
     PokemonList("Pokemon List"),
     TeamScreen("Pokemon Team"),
-    CreateTeamScreen("Create Team")
+    CreateTeamScreen("Create Team"),
+    HelpSupportScreen("Help & Support"),
+    AboutUSScreen("About Us")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -95,8 +99,8 @@ fun PokemonScreen(context: Context) {
                                 when (option) {
                                     "Pokemon Team" -> navController.navigate("TeamScreen")
                                     "Pokedex" -> navController.navigate(PokemonListRoute.ROUTE)
-                                    "Help & Feedback" -> {}
-                                    "About Us" -> {}
+                                    "Help & Feedback" -> navController.navigate("help_support_screen")
+                                    "About Us" -> navController.navigate("about_us_screen")
                                     else -> {}
                                 }
                             })
@@ -168,6 +172,19 @@ fun PokemonScreen(context: Context) {
                                 viewModel = createTeamViewModel
                             )
                         }
+
+                        composable("help_support_screen") {
+                            canNavigateBack = false
+                            screen = PokemonScreen.HelpSupportScreen
+                            HelpSupportScreen()
+                        }
+
+                        composable("about_us_screen") {
+                            canNavigateBack = false
+                            screen = PokemonScreen.AboutUSScreen
+                            AboutUsScreen()
+                        }
+
                     }
                 }
             }
