@@ -1,5 +1,7 @@
 package com.example.pokemonproject.domain.DTO
 
+import java.io.Serializable
+
 data class PokemonDTO(
     val id: Int = 0,
     val name: String = "",
@@ -15,4 +17,4 @@ data class PokemonDTO(
     val special_defense: String = "",
     val speed: String = "",
     var description: String = ""
-)
+) : Serializable

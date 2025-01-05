@@ -27,7 +27,7 @@ class PokemonListViewModel @Inject constructor(
     }
 
     // Fetch Pokémon data
-    private fun fetchPokemonData() {
+    fun fetchPokemonData() {
         updateState(PokemonStatus.LOADING)
         viewModelScope.launch {
             try {
@@ -62,6 +62,7 @@ class PokemonListViewModel @Inject constructor(
         updateState(PokemonStatus.SUCCESS, pokemonList = filteredList)
     }
 
+    // Filter Pokémon by type
     fun filterPokemonByType(type: String) {
         val filteredList = if (type.isEmpty()) {
             originalList // If the type is empty, return the original list
@@ -70,6 +71,4 @@ class PokemonListViewModel @Inject constructor(
         }
         updateState(PokemonStatus.SUCCESS, pokemonList = filteredList)
     }
-
-
 }

@@ -6,7 +6,6 @@ import PokemonDetailScreen
 import PokemonListScreen
 import android.content.Context
 import androidx.compose.animation.ExperimentalSharedTransitionApi
-import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -32,12 +31,23 @@ import androidx.navigation.toRoute
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalDensity
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.pokemonproject.data.Room.PokemonDatabase
+import com.example.pokemonproject.domain.repository.TeamRepository
+import com.example.pokemonproject.screen.PokemonScreen.CreateTeamScreen.CreateTeamScreen
+import com.example.pokemonproject.screen.PokemonScreen.CreateTeamScreen.CreateTeamViewModel
+import com.example.pokemonproject.screen.PokemonScreen.TeamScreen.TeamScreen
+import com.example.pokemonproject.screen.PokemonScreen.TeamScreen.TeamScreenViewModel
 
 enum class PokemonScreen(val title: String) {
     PokemonDetail("Pokemon Detail"),
-    PokemonList("Pokemon List")
+    PokemonList("Pokemon List"),
+    TeamScreen("Pokemon Team"),
+    CreateTeamScreen("Create Team")
 }
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalSharedTransitionApi::class)
@@ -52,8 +62,12 @@ fun PokemonScreen(context: Context) {
     // State for filter visibility
     var isFilterMenuVisible by remember { mutableStateOf(false) }
 
+    // Create TeamRepository instance from the database
+    val teamDatabase = PokemonDatabase.getDatabase(context) // Get the instance of PokemonDatabase
+    val teamRepository = TeamRepository(teamDao = teamDatabase.teamDao()) // Use teamDao() from the database
+
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-        val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() } // Convert to Dp
+        val screenWidth = with(LocalDensity.current) { constraints.maxWidth.toDp() }
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -66,6 +80,10 @@ fun PokemonScreen(context: Context) {
                     ) {
                         DrawerContent(onOptionSelected = { option ->
                             coroutineScope.launch { drawerState.close() }
+                            when (option) {
+                                "Pokemon Team" -> navController.navigate("TeamScreen")
+                                "Pokedex" -> navController.navigate("${PokemonListRoute.route}/{slotIndex}/{isForTeamBuilder}")
+                            }
                         })
                     }
                 }
@@ -83,33 +101,74 @@ fun PokemonScreen(context: Context) {
                             screen = PokemonScreen.PokemonList
                         },
                         onMenuClick = { coroutineScope.launch { drawerState.open() } },
-                        onFilterClick = { isFilterMenuVisible = !isFilterMenuVisible } // Update filter visibility state
+                        onFilterClick = { isFilterMenuVisible = !isFilterMenuVisible },
                     )
                 }
             ) { innerPadding ->
-                SharedTransitionLayout {
-                    NavHost(navController = navController, startDestination = PokemonListRoute) {
-                        composable<PokemonListRoute> {
-                            PokemonListScreen(
-                                onPokemonClick = { id ->
-                                    navController.navigate(PokemonDetailRout(id))
-                                    screen = PokemonScreen.PokemonDetail
-                                    canNavigateBack = true
-                                },
-                                innerPadding = innerPadding,
-                                context = context,
-                                isFilterMenuVisible = isFilterMenuVisible, // Pass the filter state
-                                onFilterVisibilityChanged = { isFilterMenuVisible = it } // Allow child to update state
-                            )
-                        }
-                        composable<PokemonDetailRout> {
-                            val args = it.toRoute<PokemonDetailRout>()
-                            PokemonDetailScreen(
-                                animatedVisibilityScope = this,
-                                id = args.id,
-                            )
-                        }
+                NavHost(navController = navController, startDestination = "${PokemonListRoute.route}/{slotIndex}/{isForTeamBuilder}") {
+                    composable("${PokemonListRoute.route}/{slotIndex}/{isForTeamBuilder}") { backStackEntry ->
+                        // Extract slotIndex and isForTeamBuilder arguments from the back stack
+                        val slotIndex =
+                            backStackEntry.arguments?.getString("slotIndex")?.toIntOrNull() ?: -1
+                        val isForTeamBuilder =
+                            backStackEntry.arguments?.getString("isForTeamBuilder")?.toBoolean()
+                                ?: false
+                        canNavigateBack = false
+                        // Pass the onPokemonTeamSelect lambda here
+                        PokemonListScreen(
+                            innerPadding = innerPadding,
+                            context = context,
+                            onPokemonClick = { pokemonId ->
+                                navController.navigate(PokemonDetailRoute(pokemonId)) // Navigate to Pokémon detail
+                            },
+                            onPokemonTeamSelect = { selectedPokemon ->
+                                // Handle Pokémon team selection
+                                navController.previousBackStackEntry?.savedStateHandle?.set(
+                                    "selectedPokemon",
+                                    selectedPokemon
+                                )
+                                navController.previousBackStackEntry?.savedStateHandle?.set(
+                                    "slotIndex",
+                                    slotIndex
+                                )
+                                navController.popBackStack() // Return to the previous screen
+                            },
+                            isFilterMenuVisible = isFilterMenuVisible,
+                            onFilterVisibilityChanged = { isFilterMenuVisible = it },
+                            slotIndex = slotIndex,
+                            isForTeamBuilder = isForTeamBuilder
+                        )
                     }
+
+
+                        composable<PokemonDetailRoute> {
+                        val args = it.toRoute<PokemonDetailRoute>()
+                        screen = PokemonScreen.PokemonDetail
+                        canNavigateBack = true
+                        PokemonDetailScreen(
+                            animatedVisibilityScope = this,
+                            id = args.id,
+                        )
+                    }
+
+                    composable("TeamScreen") {
+                        // Pass the teamRepository to the viewModel
+                        canNavigateBack = false
+                        screen = PokemonScreen.TeamScreen
+                        TeamScreen(navController = navController, viewModel = TeamScreenViewModel(repository = teamRepository))
+                    }
+
+                    composable("create_team_screen") {
+                        canNavigateBack = true
+                        val createTeamViewModel: CreateTeamViewModel = hiltViewModel() // Automatically inject the ViewModel
+
+                        CreateTeamScreen(
+                            navController = navController,
+                            createTeamViewModel = createTeamViewModel
+                        )
+                    }
+
+
                 }
             }
         }
@@ -122,7 +181,7 @@ fun PokemonAppBarWithMenu(
     canNavigateBack: Boolean,
     navigateUp: () -> Unit,
     onMenuClick: () -> Unit,
-    onFilterClick: () -> Unit, // Add onFilterClick here
+    onFilterClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopAppBar(
@@ -149,18 +208,24 @@ fun PokemonAppBarWithMenu(
             }
         },
         actions = {
-            // Only show filter button on PokemonList screen
-            if (pokemonScreen == PokemonScreen.PokemonList) {
-                IconButton(onClick = onFilterClick) {
-                    Icon(
-                        imageVector = Icons.Filled.FilterList,
-                        contentDescription = "Filter"
-                    )
+            when (pokemonScreen) {
+                PokemonScreen.PokemonList -> {
+                    IconButton(onClick = onFilterClick) {
+                        Icon(
+                            imageVector = Icons.Filled.FilterList,
+                            contentDescription = "Filter"
+                        )
+                    }
                 }
+                else -> {}
             }
         }
     )
 }
+
+
+
+
 
 @Composable
 fun DrawerContent(onOptionSelected: (String) -> Unit) {
@@ -177,8 +242,6 @@ fun DrawerContent(onOptionSelected: (String) -> Unit) {
                     color = MaterialTheme.colorScheme.onPrimary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-//                // Optionally, add a profile picture here
-//                Icon(Icons.Filled.Menu, contentDescription = "Profile", tint = MaterialTheme.colorScheme.onPrimary)
             }
         }
 
@@ -189,7 +252,9 @@ fun DrawerContent(onOptionSelected: (String) -> Unit) {
         options.forEach { option ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().clickable { onOptionSelected(option) }
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onOptionSelected(option) }
             ) {
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
@@ -202,20 +267,15 @@ fun DrawerContent(onOptionSelected: (String) -> Unit) {
         }
 
         // Footer Section (Optional)
-        Spacer(modifier = Modifier.weight(1f)) // To push footer to the bottom
-        Divider()
-        Column(
-            modifier = Modifier.fillMaxWidth().padding(16.dp)
-        ) {
-//            TextButton(onClick = { onOptionSelected("Settings") }) {
-//                Text("Settings")
-//            }
-        }
+        Spacer(modifier = Modifier.weight(1f))
     }
 }
 
-@Serializable
-data object PokemonListRoute
 
 @Serializable
-data class PokemonDetailRout(val id: Int)
+data object PokemonListRoute{
+    const val route = "pokemon_list_route"
+}
+
+@Serializable
+data class PokemonDetailRoute(val id: Int)

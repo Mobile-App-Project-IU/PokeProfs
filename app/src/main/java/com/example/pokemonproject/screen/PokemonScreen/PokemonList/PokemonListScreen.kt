@@ -11,7 +11,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -29,12 +28,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.pokemonproject.domain.DTO.PokemonDTO
 import com.example.pokemonproject.domain.model.PokemonState
 import com.example.pokemonproject.domain.model.PokemonStatus
 import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListViewModel
 import com.example.pokemonproject.utils.isInternetAvailable
 import com.example.myapplication.ui.theme.elementColor
+import com.example.pokemonproject.domain.DTO.PokemonDTO
+import com.example.pokemonproject.domain.model.Pokemon
 import com.example.pokemonproject.screen.PokemonScreen.PokemonAppBarWithMenu
 import com.example.pokemonproject.screen.PokemonScreen.PokemonScreen
 
@@ -45,8 +45,11 @@ fun PokemonListScreen(
     innerPadding: PaddingValues,
     context: Context,
     onPokemonClick: (Int) -> Unit,
+    onPokemonTeamSelect: (String) -> Unit, // Pass Pokémon name instead of the whole object
     isFilterMenuVisible: Boolean,
-    onFilterVisibilityChanged: (Boolean) -> Unit
+    onFilterVisibilityChanged: (Boolean) -> Unit,
+    slotIndex: Int,
+    isForTeamBuilder: Boolean
 ) {
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
@@ -56,8 +59,6 @@ fun PokemonListScreen(
         "normal", "fire", "water", "electric", "grass", "ice", "fighting", "poison",
         "ground", "flying", "psychic", "bug", "rock", "ghost", "dragon", "dark", "steel", "fairy", "all"
     ).sorted()
-
-    var selectedType by remember { mutableStateOf<String?>(null) }
 
     Scaffold(
         topBar = {
@@ -109,7 +110,7 @@ fun PokemonListScreen(
                     )
                 }
 
-                    AnimatedVisibility(visible = isFilterMenuVisible) {
+                AnimatedVisibility(visible = isFilterMenuVisible) {
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -184,11 +185,18 @@ fun PokemonListScreen(
                                 ),
                                 verticalArrangement = Arrangement.spacedBy(16.dp)
                             ) {
-                                items(filteredList) { pokemon ->
+                                items(pokemonState.pokemonList) { pokemon ->
                                     PokeProfsPokemonCard(
                                         pokemon = pokemon,
                                         context = context,
-                                        onPokemonClick = { onPokemonClick(pokemon.id) }
+                                        onPokemonClick = {
+                                            if (isForTeamBuilder) {
+                                                // Send the Pokémon name to the CreateTeamScreen via onPokemonTeamSelect
+                                                onPokemonTeamSelect(pokemon.name)
+                                            } else {
+                                                onPokemonClick(pokemon.id)
+                                            }
+                                        }
                                     )
                                 }
                             }
@@ -200,9 +208,6 @@ fun PokemonListScreen(
         }
     )
 }
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("InvalidColorHexValue")
@@ -222,22 +227,22 @@ fun PokeProfsPokemonCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp), // Add spacing between cards
+            .padding(8.dp),
         colors = CardDefaults.cardColors(containerColor = cardBackgroundColor),
         onClick = onPokemonClick
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(16.dp) // Increase padding inside the card
+            modifier = Modifier.padding(16.dp)
         ) {
             Box(
                 modifier = Modifier
                     .border(
                         width = 2.dp,
                         color = Color(173, 216, 230),
-                        shape = RoundedCornerShape(8.dp) // Slightly rounder corners
+                        shape = RoundedCornerShape(8.dp)
                     )
-                    .size(120.dp) // Increase the size of the image container
+                    .size(120.dp)
                     .padding(8.dp)
             ) {
                 AsyncImage(
@@ -257,41 +262,39 @@ fun PokeProfsPokemonCard(
                 }
             }
 
-            Spacer(modifier = Modifier.width(16.dp)) // Increase spacing between image and text
+            Spacer(modifier = Modifier.width(16.dp))
 
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp) // Add right padding
+                    .padding(end = 8.dp)
             ) {
                 Text(
-                    text = pokemon.name.replaceFirstChar { it.uppercase() }, // Capitalize the first letter
-                    style = MaterialTheme.typography.titleLarge, // Use a larger font style
+                    text = pokemon.name.replaceFirstChar { it.uppercase() },
+                    style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
                 Text(
                     text = "#${pokemon.id}",
-                    style = MaterialTheme.typography.bodyMedium, // Slightly larger font size
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Spacer(modifier = Modifier.height(8.dp)) // Add space between text and badges
+                Spacer(modifier = Modifier.height(8.dp))
 
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp) // Space out badges
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     pokemon.types.forEach { type ->
                         Text(
-                            text = type.replaceFirstChar { it.uppercase() }, // Capitalize the first letter
-                            style = MaterialTheme.typography.labelMedium, // Larger text style for badges
+                            text = type.replaceFirstChar { it.uppercase() },
+                            style = MaterialTheme.typography.labelMedium,
                             color = Color.White,
                             modifier = Modifier
-                                .border(1.dp, elementColor(type), RoundedCornerShape(8.dp)) // Add border with rounder corners
-                                .background(                                    color = elementColor(type), // Background color based on type
-                                    shape = RoundedCornerShape(8.dp) // Rounder corners for badges
-                                )
-                                .padding(horizontal = 8.dp, vertical = 4.dp) // Adjust padding for badge size
+                                .border(1.dp, elementColor(type), RoundedCornerShape(8.dp))
+                                .background(elementColor(type), RoundedCornerShape(8.dp))
+                                .padding(horizontal = 8.dp, vertical = 4.dp)
                         )
                     }
                 }
@@ -299,4 +302,3 @@ fun PokeProfsPokemonCard(
         }
     }
 }
-

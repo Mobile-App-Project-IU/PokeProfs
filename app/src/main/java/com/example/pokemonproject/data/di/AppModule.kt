@@ -2,6 +2,7 @@ package com.example.pokemonproject.data.di
 
 import android.content.Context
 import androidx.room.Room
+import com.example.pokemonproject.data.Room.DAO.TeamDAO
 import com.example.pokemonproject.data.Room.ElementDAO
 import com.example.pokemonproject.data.Room.PokemonDAO
 import com.example.pokemonproject.data.Room.PokemonDatabase
@@ -63,4 +64,7 @@ object AppModule {
     // Provides the DAO for Element-related database operations
     @Provides
     fun provideElementDao(database: PokemonDatabase): ElementDAO = database.elementDao()
+
+    @Provides
+    fun provideTeamDao(database: PokemonDatabase): TeamDAO = database.teamDao()
 }
