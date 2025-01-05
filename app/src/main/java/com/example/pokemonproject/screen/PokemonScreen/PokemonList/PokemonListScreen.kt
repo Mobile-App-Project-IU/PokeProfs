@@ -34,7 +34,6 @@ import com.example.pokemonproject.screen.PokemonScreen.PokemonList.PokemonListVi
 import com.example.pokemonproject.utils.isInternetAvailable
 import com.example.myapplication.ui.theme.elementColor
 import com.example.pokemonproject.domain.DTO.PokemonDTO
-import com.example.pokemonproject.domain.model.Pokemon
 import com.example.pokemonproject.screen.PokemonScreen.PokemonAppBarWithMenu
 import com.example.pokemonproject.screen.PokemonScreen.PokemonScreen
 
@@ -45,11 +44,8 @@ fun PokemonListScreen(
     innerPadding: PaddingValues,
     context: Context,
     onPokemonClick: (Int) -> Unit,
-    onPokemonTeamSelect: (String) -> Unit, // Pass Pokémon name instead of the whole object
     isFilterMenuVisible: Boolean,
     onFilterVisibilityChanged: (Boolean) -> Unit,
-    slotIndex: Int,
-    isForTeamBuilder: Boolean
 ) {
     val pokemonState by viewModel.pokemonState.observeAsState(initial = PokemonState())
     var searchQuery by remember { mutableStateOf("") }
@@ -190,12 +186,7 @@ fun PokemonListScreen(
                                         pokemon = pokemon,
                                         context = context,
                                         onPokemonClick = {
-                                            if (isForTeamBuilder) {
-                                                // Send the Pokémon name to the CreateTeamScreen via onPokemonTeamSelect
-                                                onPokemonTeamSelect(pokemon.name)
-                                            } else {
-                                                onPokemonClick(pokemon.id)
-                                            }
+                                            onPokemonClick(pokemon.id)
                                         }
                                     )
                                 }

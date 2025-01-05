@@ -55,6 +55,14 @@ class CreateTeamViewModel @Inject constructor(
         _pokemonList.value = filteredList // Update the filtered list in LiveData
     }
 
+    fun getPokemonIdByName(name: String?): Int {
+        // Ensure that the pokemonList is populated before accessing it
+        val list = _pokemonList.value
+        return list?.firstOrNull { it.name.equals(name, ignoreCase = true) }?.id ?: -1
+    }
+
+
+
     // Save the team
     fun saveTeam(team: Team) {
         viewModelScope.launch {

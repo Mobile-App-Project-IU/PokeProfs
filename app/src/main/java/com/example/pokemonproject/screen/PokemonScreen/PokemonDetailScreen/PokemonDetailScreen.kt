@@ -21,8 +21,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,14 +72,14 @@ fun PokemonDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                    Brush.verticalGradient(
-                        listOf(
-                            Color.White, // Starting color
-                            pokemon.types.firstOrNull()?.let {
-                                elementColor(it).copy(alpha = 1f)
-                            } ?: Color.Gray.copy(alpha = 0.5f) // Fallback color if the first type is null
-                        )
+                Brush.verticalGradient(
+                    listOf(
+                        Color.White, // Starting color
+                        pokemon.types.firstOrNull()?.let {
+                            elementColor(it).copy(alpha = 1f)
+                        } ?: Color.Gray.copy(alpha = 0.5f) // Fallback color if the first type is null
                     )
+                )
             ),
         contentAlignment = Alignment.Center
     )
@@ -281,4 +279,3 @@ fun PokemonStat(
         }
     }
 }
-

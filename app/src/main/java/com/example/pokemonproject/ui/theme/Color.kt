@@ -11,6 +11,14 @@ val Purple40 = Color(0xFF6650a4)
 val PurpleGrey40 = Color(0xFF625b71)
 val Pink40 = Color(0xFF7D5260)
 
+val PokeBallRed = Color(0xFFFF0000)
+val PokeBallWhite = Color(0xFFFFFFFF)
+val PokeBallBlack = Color(0xFF000000)
+val PokemonYellow = Color(0xFFFFD700)
+val PokemonBlue = Color(0xFF1E90FF)
+val PokemonGreen = Color(0xFF32CD32)
+val PokemonGray = Color(0xFF808080)
+
 fun elementColor(type: String): Color {
     return when (type.lowercase()) {
         "normal" -> Color(0xFF9E9E9E) // Grayish neutral

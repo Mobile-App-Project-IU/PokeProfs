@@ -13,23 +13,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+// ViewModel for the Team Screen, responsible for managing UI-related data
 @HiltViewModel
 class TeamScreenViewModel @Inject constructor(
-    private val repository: TeamRepository // Injecting the TeamRepository
+    private val repository: TeamRepository // Injecting the TeamRepository to interact with data layer
 ) : ViewModel() {
 
+    // Mutable state flow to hold the list of teams, private to the ViewModel
     private val _teams = MutableStateFlow<List<Team>>(emptyList())
+
+    // Public state flow to expose the list of teams to the UI
     val teams: StateFlow<List<Team>> get() = _teams
 
+    // Initialization block: loads the teams when the ViewModel is created
     init {
         loadTeams()
     }
 
-    // Load teams from repository
+    // Function to load teams from the repository
     fun loadTeams() {
         viewModelScope.launch {
+            // Collecting the team entities from the repository
             repository.getAllTeams().collect { teamEntities ->
-                _teams.value = teamEntities.map { it.toDomain() } // Convert TeamEntity to Team
+                // Converting team entities to domain model objects and updating the state flow
+                _teams.value = teamEntities.map { it.toDomain() }
             }
         }
     }
@@ -38,13 +45,16 @@ class TeamScreenViewModel @Inject constructor(
     fun deleteTeam(team: Team) {
         viewModelScope.launch {
             try {
-                // Delete the team using the repository
+                // Deleting the team through the repository, converting the Team object to TeamEntity
                 repository.deleteTeam(team.toEntity()) // Assuming `toEntity()` converts `Team` to `TeamEntity`
+
+                // Log success message
                 Log.d("TeamScreenViewModel", "Team deleted successfully: ${team.name}")
 
-                // Refresh the teams list after deletion
+                // Refresh the list of teams after deletion
                 loadTeams()
             } catch (e: Exception) {
+                // Log an error message if there is an exception during the deletion process
                 Log.e("TeamScreenViewModel", "Error deleting team: ${e.message}")
             }
         }
